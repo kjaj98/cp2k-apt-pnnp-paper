@@ -1,0 +1,1215 @@
+!--------------------------------------------------------------------------------------------------!
+!   CP2K: A general program to perform molecular dynamics simulations                              !
+!   Copyright 2000-2022 CP2K developers group <https://cp2k.org>                                   !
+!                                                                                                  !
+!   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
+!--------------------------------------------------------------------------------------------------!
+
+! **************************************************************************************************
+!> \brief Module performing a vibrational analysis
+!> \note
+!>      Numerical accuracy for parallel runs:
+!>       Each replica starts the SCF run from the one optimized
+!>       in a previous run. It may happen then energies and derivatives
+!>       of a serial run and a parallel run could be slightly different
+!>       'cause of a different starting density matrix.
+!>       Exact results are obtained using:
+!>          EXTRAPOLATION USE_GUESS in QS section (Teo 08.2006)
+!> \author Teodoro Laino 08.2006
+! **************************************************************************************************
+MODULE vibrational_analysis
+   USE atomic_kind_types,               ONLY: get_atomic_kind
+   USE cp_blacs_env,                    ONLY: cp_blacs_env_create,&
+                                              cp_blacs_env_release,&
+                                              cp_blacs_env_type
+   USE cp_fm_struct,                    ONLY: cp_fm_struct_create,&
+                                              cp_fm_struct_release,&
+                                              cp_fm_struct_type
+   USE cp_fm_types,                     ONLY: cp_fm_create,&
+                                              cp_fm_release,&
+                                              cp_fm_set_all,&
+                                              cp_fm_set_element,&
+                                              cp_fm_type,&
+                                              cp_fm_write_unformatted
+   USE cp_log_handling,                 ONLY: cp_get_default_logger,&
+                                              cp_logger_get_default_io_unit,&
+                                              cp_logger_type
+   USE cp_output_handling,              ONLY: cp_print_key_finished_output,&
+                                              cp_print_key_unit_nr
+   USE cp_para_types,                   ONLY: cp_para_env_type
+   USE cp_result_methods,               ONLY: get_results,&
+                                              test_for_result
+   USE cp_subsys_types,                 ONLY: cp_subsys_get,&
+                                              cp_subsys_type
+   USE f77_interface,                   ONLY: f_env_add_defaults,&
+                                              f_env_rm_defaults,&
+                                              f_env_type
+   USE force_env_types,                 ONLY: force_env_get,&
+                                              force_env_type
+   USE global_types,                    ONLY: global_environment_type
+   USE grrm_utils,                      ONLY: write_grrm
+   USE header,                          ONLY: vib_header
+   USE input_constants,                 ONLY: do_rep_blocked
+   USE input_section_types,             ONLY: section_type,&
+                                              section_vals_get,&
+                                              section_vals_get_subs_vals,&
+                                              section_vals_type,&
+                                              section_vals_val_get
+   USE kinds,                           ONLY: default_string_length,&
+                                              dp
+   USE mathconstants,                   ONLY: pi
+   USE mathlib,                         ONLY: diamat_all
+   USE mode_selective,                  ONLY: ms_vb_anal
+   USE molden_utils,                    ONLY: write_vibrations_molden
+   USE molecule_kind_list_types,        ONLY: molecule_kind_list_type
+   USE molecule_kind_types,             ONLY: fixd_constraint_type,&
+                                              get_molecule_kind,&
+                                              molecule_kind_type
+   USE motion_utils,                    ONLY: rot_ana,&
+                                              thrs_motion
+   USE particle_list_types,             ONLY: particle_list_type
+   USE particle_methods,                ONLY: write_particle_matrix
+   USE particle_types,                  ONLY: particle_type
+   USE physcon,                         ONLY: &
+        a_bohr, angstrom, bohr, boltzmann, debye, e_mass, h_bar, hertz, kelvin, kjmol, massunit, &
+        n_avogadro, pascal, vibfac, wavenumbers
+   USE replica_methods,                 ONLY: rep_env_calc_e_f,&
+                                              rep_env_create
+   USE replica_types,                   ONLY: rep_env_release,&
+                                              replica_env_type
+   USE scine_utils,                     ONLY: write_scine
+   USE util,                            ONLY: sort
+#include "../base/base_uses.f90"
+
+   IMPLICIT NONE
+   PRIVATE
+   CHARACTER(len=*), PARAMETER, PRIVATE :: moduleN = 'vibrational_analysis'
+   LOGICAL, PARAMETER                   :: debug_this_module = .FALSE.
+
+   PUBLIC :: vb_anal
+
+CONTAINS
+
+! **************************************************************************************************
+!> \brief Module performing a vibrational analysis
+!> \param input ...
+!> \param input_declaration ...
+!> \param para_env ...
+!> \param globenv ...
+!> \author Teodoro Laino 08.2006
+! **************************************************************************************************
+   SUBROUTINE vb_anal(input, input_declaration, para_env, globenv)
+      TYPE(section_vals_type), POINTER                   :: input
+      TYPE(section_type), POINTER                        :: input_declaration
+      TYPE(cp_para_env_type), POINTER                    :: para_env
+      TYPE(global_environment_type), POINTER             :: globenv
+
+      CHARACTER(len=*), PARAMETER                        :: routineN = 'vb_anal'
+      CHARACTER(LEN=1), DIMENSION(3), PARAMETER          :: lab = (/"X", "Y", "Z"/)
+
+      CHARACTER(LEN=default_string_length)               :: description_d, description_p
+      INTEGER :: handle, i, icoord, icoordm, icoordp, ierr, imap, iounit, ip1, ip2, iparticle1, &
+         iparticle2, iseq, iw, j, k, natoms, ncoord, nfrozen, nrep, nres, nRotTrM, nvib, &
+         output_unit, output_unit_eig, prep, print_grrm, print_namd, print_scine, proc_dist_type
+      INTEGER, DIMENSION(:), POINTER                     :: Clist, Mlist
+      LOGICAL :: calc_intens, calc_thchdata, do_mode_tracking, intens_ir, intens_raman, &
+         keep_rotations, row_force, something_frozen
+      REAL(KIND=dp)                                      :: a1, a2, a3, conver, dummy, dx, &
+                                                            inertia(3), minimum_energy, norm, &
+                                                            tc_press, tc_temp, tmp
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:)           :: H_eigval1, H_eigval2, HeigvalDfull, &
+                                                            konst, mass, pos0, rmass
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:, :)        :: Hessian, Hint1, Hint2, Hint2Dfull, MatM
+      REAL(KIND=dp), DIMENSION(3)                        :: D_deriv, d_print
+      REAL(KIND=dp), DIMENSION(3, 3)                     :: P_deriv, p_print
+      REAL(KIND=dp), DIMENSION(:), POINTER               :: depol_p, depol_u, depp, depu, din, &
+                                                            intensities_d, intensities_p, pin
+      REAL(KIND=dp), DIMENSION(:, :), POINTER            :: D, Dfull, dip_deriv, RotTrM
+      REAL(KIND=dp), DIMENSION(:, :, :), POINTER         :: polar_deriv, tmp_dip
+      REAL(KIND=dp), DIMENSION(:, :, :, :), POINTER      :: tmp_polar
+      TYPE(cp_logger_type), POINTER                      :: logger
+      TYPE(cp_subsys_type), POINTER                      :: subsys
+      TYPE(f_env_type), POINTER                          :: f_env
+      TYPE(particle_type), DIMENSION(:), POINTER         :: particles
+      TYPE(replica_env_type), POINTER                    :: rep_env
+      TYPE(section_vals_type), POINTER                   :: force_env_section, &
+                                                            mode_tracking_section, print_section, &
+                                                            vib_section
+
+      CALL timeset(routineN, handle)
+      NULLIFY (D, RotTrM, logger, subsys, f_env, particles, rep_env, intensities_d, intensities_p, &
+               vib_section, print_section, depol_p, depol_u)
+      logger => cp_get_default_logger()
+      vib_section => section_vals_get_subs_vals(input, "VIBRATIONAL_ANALYSIS")
+      print_section => section_vals_get_subs_vals(vib_section, "PRINT")
+      output_unit = cp_print_key_unit_nr(logger, &
+                                         print_section, &
+                                         "PROGRAM_RUN_INFO", &
+                                         extension=".vibLog")
+      iounit = cp_logger_get_default_io_unit(logger)
+      ! for output of cartesian frequencies and eigenvectors of the
+      ! Hessian that can be used for initialisation of MD calculations
+      output_unit_eig = cp_print_key_unit_nr(logger, &
+                                             print_section, &
+                                             "CARTESIAN_EIGS", &
+                                             extension=".eig", &
+                                             file_status="REPLACE", &
+                                             file_action="WRITE", &
+                                             do_backup=.TRUE., &
+                                             file_form="UNFORMATTED")
+
+      CALL section_vals_val_get(vib_section, "DX", r_val=dx)
+      CALL section_vals_val_get(vib_section, "NPROC_REP", i_val=prep)
+      CALL section_vals_val_get(vib_section, "PROC_DIST_TYPE", i_val=proc_dist_type)
+      row_force = (proc_dist_type == do_rep_blocked)
+      CALL section_vals_val_get(vib_section, "FULLY_PERIODIC", l_val=keep_rotations)
+      CALL section_vals_val_get(vib_section, "INTENSITIES", l_val=calc_intens)
+      CALL section_vals_val_get(vib_section, "THERMOCHEMISTRY", l_val=calc_thchdata)
+      CALL section_vals_val_get(vib_section, "TC_TEMPERATURE", r_val=tc_temp)
+      CALL section_vals_val_get(vib_section, "TC_PRESSURE", r_val=tc_press)
+
+      tc_temp = tc_temp*kelvin
+      tc_press = tc_press*pascal
+
+      intens_ir = .FALSE.
+      intens_raman = .FALSE.
+
+      mode_tracking_section => section_vals_get_subs_vals(vib_section, "MODE_SELECTIVE")
+      CALL section_vals_get(mode_tracking_section, explicit=do_mode_tracking)
+      nrep = MAX(1, para_env%num_pe/prep)
+      prep = para_env%num_pe/nrep
+      iw = cp_print_key_unit_nr(logger, print_section, "BANNER", extension=".vibLog")
+      CALL vib_header(iw, nrep, prep)
+      CALL cp_print_key_finished_output(iw, logger, print_section, "BANNER")
+      ! Just one force_env allowed
+      force_env_section => section_vals_get_subs_vals(input, "FORCE_EVAL")
+      ! Create Replica Environments
+      CALL rep_env_create(rep_env, para_env=para_env, input=input, &
+                          input_declaration=input_declaration, nrep=nrep, prep=prep, row_force=row_force)
+      IF (ASSOCIATED(rep_env)) THEN
+         CALL f_env_add_defaults(f_env_id=rep_env%f_env_id, f_env=f_env)
+         CALL force_env_get(f_env%force_env, subsys=subsys)
+         particles => subsys%particles%els
+         ! Decide which kind of Vibrational Analysis to perform
+         IF (do_mode_tracking) THEN
+            CALL ms_vb_anal(input, rep_env, para_env, globenv, particles, &
+                            nrep, calc_intens, dx, output_unit, logger)
+            CALL f_env_rm_defaults(f_env, ierr)
+         ELSE
+            CALL get_moving_atoms(force_env=f_env%force_env, Ilist=Mlist)
+            something_frozen = SIZE(particles) .NE. SIZE(Mlist)
+            natoms = SIZE(Mlist)
+            ncoord = natoms*3
+            ALLOCATE (Clist(ncoord))
+            ALLOCATE (mass(natoms))
+            ALLOCATE (pos0(ncoord))
+            ALLOCATE (Hessian(ncoord, ncoord))
+            IF (calc_intens) THEN
+               description_d = '[DIPOLE]'
+               ALLOCATE (tmp_dip(ncoord, 3, 2))
+               tmp_dip = 0._dp
+               description_p = '[POLAR]'
+               ALLOCATE (tmp_polar(ncoord, 3, 3, 2))
+               tmp_polar = 0._dp
+            END IF
+            Clist = 0
+            DO i = 1, natoms
+               imap = Mlist(i)
+               Clist((i - 1)*3 + 1) = (imap - 1)*3 + 1
+               Clist((i - 1)*3 + 2) = (imap - 1)*3 + 2
+               Clist((i - 1)*3 + 3) = (imap - 1)*3 + 3
+               mass(i) = particles(imap)%atomic_kind%mass
+               CPASSERT(mass(i) > 0.0_dp)
+               mass(i) = SQRT(mass(i))
+               pos0((i - 1)*3 + 1) = particles(imap)%r(1)
+               pos0((i - 1)*3 + 2) = particles(imap)%r(2)
+               pos0((i - 1)*3 + 3) = particles(imap)%r(3)
+            END DO
+            !
+            ! Determine the principal axes of inertia.
+            ! Generation of coordinates in the rotating and translating frame
+            !
+            IF (something_frozen) THEN
+               nRotTrM = 0
+               ALLOCATE (RotTrM(natoms*3, nRotTrM))
+            ELSE
+               CALL rot_ana(particles, RotTrM, nRotTrM, print_section, &
+                            keep_rotations, mass_weighted=.TRUE., natoms=natoms, inertia=inertia)
+            END IF
+            ! Generate the suitable rototranslating basis set
+            nvib = 3*natoms - nRotTrM
+            IF (.FALSE.) THEN !option full in build_D_matrix, at the moment not enabled
+               !but dimensions of D must be adjusted in this case
+               ALLOCATE (D(3*natoms, 3*natoms))
+            ELSE
+               ALLOCATE (D(3*natoms, nvib))
+            END IF
+            CALL build_D_matrix(RotTrM, nRotTrM, D, full=.FALSE., &
+                                natoms=natoms)
+            !
+            ! Loop on atoms and coordinates
+            !
+            Hessian = HUGE(0.0_dp)
+            IF (output_unit > 0) WRITE (output_unit, '(/,T2,A)') "VIB| Vibrational Analysis Info"
+            DO icoordp = 1, ncoord, nrep
+               icoord = icoordp - 1
+               DO j = 1, nrep
+                  DO i = 1, ncoord
+                     imap = Clist(i)
+                     rep_env%r(imap, j) = pos0(i)
+                  END DO
+                  IF (icoord + j <= ncoord) THEN
+                     imap = Clist(icoord + j)
+                     rep_env%r(imap, j) = rep_env%r(imap, j) + Dx
+                  END IF
+               END DO
+               CALL rep_env_calc_e_f(rep_env, calc_f=.TRUE.)
+
+               DO j = 1, nrep
+                  IF (calc_intens) THEN
+                     IF (icoord + j <= ncoord) THEN
+                        IF (test_for_result(results=rep_env%results(j)%results, &
+                                            description=description_d)) THEN
+                           CALL get_results(results=rep_env%results(j)%results, &
+                                            description=description_d, &
+                                            n_rep=nres)
+                           CALL get_results(results=rep_env%results(j)%results, &
+                                            description=description_d, &
+                                            values=tmp_dip(icoord + j, :, 1), &
+                                            nval=nres)
+                           intens_ir = .TRUE.
+                           d_print(:) = tmp_dip(icoord + j, :, 1)
+                        END IF
+                        IF (test_for_result(results=rep_env%results(j)%results, &
+                                            description=description_p)) THEN
+                           CALL get_results(results=rep_env%results(j)%results, &
+                                            description=description_p, &
+                                            n_rep=nres)
+                           CALL get_results(results=rep_env%results(j)%results, &
+                                            description=description_p, &
+                                            values=tmp_polar(icoord + j, :, :, 1), &
+                                            nval=nres)
+                           intens_raman = .TRUE.
+                           p_print(:, :) = tmp_polar(icoord + j, :, :, 1)
+                        END IF
+                     END IF
+                  END IF
+                  IF (icoord + j <= ncoord) THEN
+                     DO i = 1, ncoord
+                        imap = Clist(i)
+                        Hessian(i, icoord + j) = rep_env%f(imap, j)
+                     END DO
+                     imap = Clist(icoord + j)
+                     ! Dump Info
+                     IF (output_unit > 0) THEN
+                        iparticle1 = imap/3
+                        IF (MOD(imap, 3) /= 0) iparticle1 = iparticle1 + 1
+                        WRITE (output_unit, '(T2,A,I5,A,I5,3A)') &
+                           "VIB| REPLICA Nr.", j, "- Energy and Forces for particle:", &
+                           iparticle1, "  coordinate: ", lab(imap - (iparticle1 - 1)*3), &
+                           " + D"//TRIM(lab(imap - (iparticle1 - 1)*3))
+                        WRITE (output_unit, '(T2,A,T43,A,T57,F24.12)') &
+                           "VIB|", "Total energy:", rep_env%f(rep_env%ndim + 1, j)
+                        WRITE (output_unit, '(T2,"VIB|",T10,"ATOM",T33,3(9X,A,7X))') lab(1), lab(2), lab(3)
+                        DO i = 1, natoms
+                           imap = Mlist(i)
+                           WRITE (output_unit, '(T2,"VIB|",T12,A,T30,3(2X,F15.9))') &
+                              particles(imap)%atomic_kind%name, &
+                              rep_env%f((imap - 1)*3 + 1:(imap - 1)*3 + 3, j)
+                        END DO
+                        IF (intens_ir) THEN
+                           WRITE (output_unit, '(T3,A)') 'Dipole moment [Debye]'
+                           WRITE (output_unit, '(T5,3(A,F14.8,1X),T60,A,T67,F14.8)') &
+                              'X=', d_print(1)*debye, 'Y=', d_print(2)*debye, 'Z=', d_print(3)*debye, &
+                              'Total=', SQRT(SUM(d_print(1:3)**2))*debye
+                        END IF
+                        IF (intens_raman) THEN
+                           WRITE (output_unit, '(T2,A)') &
+                              'POLAR| Polarizability tensor [a.u.]'
+                           WRITE (output_unit, '(T2,A,T24,3(1X,F18.12))') &
+                              'POLAR| xx,yy,zz', p_print(1, 1), p_print(2, 2), p_print(3, 3)
+                           WRITE (output_unit, '(T2,A,T24,3(1X,F18.12))') &
+                              'POLAR| xy,xz,yz', p_print(1, 2), p_print(1, 3), p_print(2, 3)
+                           WRITE (output_unit, '(T2,A,T24,3(1X,F18.12),/)') &
+                              'POLAR| yx,zx,zy', p_print(2, 1), p_print(3, 1), p_print(3, 2)
+                        END IF
+                     END IF
+                  END IF
+               END DO
+            END DO
+            DO icoordm = 1, ncoord, nrep
+               icoord = icoordm - 1
+               DO j = 1, nrep
+                  DO i = 1, ncoord
+                     imap = Clist(i)
+                     rep_env%r(imap, j) = pos0(i)
+                  END DO
+                  IF (icoord + j <= ncoord) THEN
+                     imap = Clist(icoord + j)
+                     rep_env%r(imap, j) = rep_env%r(imap, j) - Dx
+                  END IF
+               END DO
+               CALL rep_env_calc_e_f(rep_env, calc_f=.TRUE.)
+
+               DO j = 1, nrep
+                  IF (calc_intens) THEN
+                     IF (icoord + j <= ncoord) THEN
+                        k = (icoord + j + 2)/3
+                        IF (test_for_result(results=rep_env%results(j)%results, &
+                                            description=description_d)) THEN
+                           CALL get_results(results=rep_env%results(j)%results, &
+                                            description=description_d, &
+                                            n_rep=nres)
+                           CALL get_results(results=rep_env%results(j)%results, &
+                                            description=description_d, &
+                                            values=tmp_dip(icoord + j, :, 2), &
+                                            nval=nres)
+                           tmp_dip(icoord + j, :, 1) = (tmp_dip(icoord + j, :, 1) - &
+                                                        tmp_dip(icoord + j, :, 2))/(2.0_dp*Dx*mass(k))
+                           d_print(:) = tmp_dip(icoord + j, :, 1)
+                        END IF
+                        IF (test_for_result(results=rep_env%results(j)%results, &
+                                            description=description_p)) THEN
+                           CALL get_results(results=rep_env%results(j)%results, &
+                                            description=description_p, &
+                                            n_rep=nres)
+                           CALL get_results(results=rep_env%results(j)%results, &
+                                            description=description_p, &
+                                            values=tmp_polar(icoord + j, :, :, 2), &
+                                            nval=nres)
+                           tmp_polar(icoord + j, :, :, 1) = (tmp_polar(icoord + j, :, :, 1) - &
+                                                             tmp_polar(icoord + j, :, :, 2))/(2.0_dp*Dx*mass(k))
+                           p_print(:, :) = tmp_polar(icoord + j, :, :, 1)
+                        END IF
+                     END IF
+                  END IF
+                  IF (icoord + j <= ncoord) THEN
+                     imap = Clist(icoord + j)
+                     iparticle1 = imap/3
+                     IF (MOD(imap, 3) /= 0) iparticle1 = iparticle1 + 1
+                     ip1 = (icoord + j)/3
+                     IF (MOD(icoord + j, 3) /= 0) ip1 = ip1 + 1
+                     ! Dump Info
+                     IF (output_unit > 0) THEN
+                        WRITE (output_unit, '(T2,A,I5,A,I5,3A)') &
+                           "VIB| REPLICA Nr.", j, "- Energy and Forces for particle:", &
+                           iparticle1, "  coordinate: ", lab(imap - (iparticle1 - 1)*3), &
+                           " - D"//TRIM(lab(imap - (iparticle1 - 1)*3))
+                        WRITE (output_unit, '(T2,A,T43,A,T57,F24.12)') &
+                           "VIB|", "Total energy:", rep_env%f(rep_env%ndim + 1, j)
+                        WRITE (output_unit, '(T2,"VIB|",T10,"ATOM",T33,3(9X,A,7X))') lab(1), lab(2), lab(3)
+                        DO i = 1, natoms
+                           imap = Mlist(i)
+                           WRITE (output_unit, '(T2,"VIB|",T12,A,T30,3(2X,F15.9))') &
+                              particles(imap)%atomic_kind%name, &
+                              rep_env%f((imap - 1)*3 + 1:(imap - 1)*3 + 3, j)
+                        END DO
+                        IF (intens_ir) THEN
+                           WRITE (output_unit, '(T3,A)') 'Dipole moment [Debye]'
+                           WRITE (output_unit, '(T5,3(A,F14.8,1X),T60,A,T67,F14.8)') &
+                              'X=', d_print(1)*debye, 'Y=', d_print(2)*debye, 'Z=', d_print(3)*debye, &
+                              'Total=', SQRT(SUM(d_print(1:3)**2))*debye
+                        END IF
+                        IF (intens_raman) THEN
+                           WRITE (output_unit, '(T2,A)') &
+                              'POLAR| Polarizability tensor [a.u.]'
+                           WRITE (output_unit, '(T2,A,T24,3(1X,F18.12))') &
+                              'POLAR| xx,yy,zz', p_print(1, 1), p_print(2, 2), p_print(3, 3)
+                           WRITE (output_unit, '(T2,A,T24,3(1X,F18.12))') &
+                              'POLAR| xy,xz,yz', p_print(1, 2), p_print(1, 3), p_print(2, 3)
+                           WRITE (output_unit, '(T2,A,T24,3(1X,F18.12),/)') &
+                              'POLAR| yx,zx,zy', p_print(2, 1), p_print(3, 1), p_print(3, 2)
+                        END IF
+                     END IF
+                     DO iseq = 1, ncoord
+                        imap = Clist(iseq)
+                        iparticle2 = imap/3
+                        IF (MOD(imap, 3) /= 0) iparticle2 = iparticle2 + 1
+                        ip2 = iseq/3
+                        IF (MOD(iseq, 3) /= 0) ip2 = ip2 + 1
+                        tmp = Hessian(iseq, icoord + j) - rep_env%f(imap, j)
+                        tmp = -tmp/(2.0_dp*Dx*mass(ip1)*mass(ip2))*1E6_dp
+                        ! Mass weighted Hessian
+                        Hessian(iseq, icoord + j) = tmp
+                     END DO
+                  END IF
+               END DO
+            END DO
+
+            ! restore original particle positions for output
+            DO i = 1, natoms
+               imap = Mlist(i)
+               particles(imap)%r(1:3) = pos0((i - 1)*3 + 1:(i - 1)*3 + 3)
+            END DO
+            DO j = 1, nrep
+               DO i = 1, ncoord
+                  imap = Clist(i)
+                  rep_env%r(imap, j) = pos0(i)
+               END DO
+            END DO
+            CALL rep_env_calc_e_f(rep_env, calc_f=.TRUE.)
+            j = 1
+            minimum_energy = rep_env%f(rep_env%ndim + 1, j)
+            IF (output_unit > 0) THEN
+               WRITE (output_unit, '(T2,A)') &
+                  "VIB| ", " Minimum Structure - Energy and Forces:"
+               WRITE (output_unit, '(T2,A,T43,A,T57,F24.12)') &
+                  "VIB|", "Total energy:", rep_env%f(rep_env%ndim + 1, j)
+               WRITE (output_unit, '(T2,"VIB|",T10,"ATOM",T33,3(9X,A,7X))') lab(1), lab(2), lab(3)
+               DO i = 1, natoms
+                  imap = Mlist(i)
+                  WRITE (output_unit, '(T2,"VIB|",T12,A,T30,3(2X,F15.9))') &
+                     particles(imap)%atomic_kind%name, &
+                     rep_env%f((imap - 1)*3 + 1:(imap - 1)*3 + 3, j)
+               END DO
+            END IF
+
+            ! Dump Info
+            IF (output_unit > 0) THEN
+               WRITE (output_unit, '(T2,A)') "VIB| Hessian in cartesian coordinates"
+               CALL write_particle_matrix(Hessian, particles, output_unit, el_per_part=3, &
+                                          Ilist=Mlist)
+            END IF
+
+            CALL write_va_hessian(vib_section, para_env, ncoord, globenv, Hessian, logger)
+
+            ! Enforce symmetry in the Hessian
+            DO i = 1, ncoord
+               DO j = i, ncoord
+                  ! Take the upper diagonal part
+                  Hessian(j, i) = Hessian(i, j)
+               END DO
+            END DO
+            !
+            ! Print GRMM interface file
+            print_grrm = cp_print_key_unit_nr(logger, force_env_section, "PRINT%GRRM", &
+                                              file_position="REWIND", extension=".rrm")
+            IF (print_grrm > 0) THEN
+               DO i = 1, natoms
+                  imap = Mlist(i)
+                  particles(imap)%f(1:3) = rep_env%f((imap - 1)*3 + 1:(imap - 1)*3 + 3, 1)
+               END DO
+               ALLOCATE (Hint1(ncoord, ncoord), rmass(ncoord))
+               DO i = 1, natoms
+                  imap = Mlist(i)
+                  rmass(3*(imap - 1) + 1:3*(imap - 1) + 3) = mass(imap)
+               END DO
+               DO i = 1, ncoord
+                  DO j = 1, ncoord
+                     Hint1(j, i) = Hessian(j, i)*rmass(i)*rmass(j)*1.0E-6_dp
+                  END DO
+               END DO
+               nfrozen = SIZE(particles) - natoms
+               CALL write_grrm(print_grrm, f_env%force_env, particles, minimum_energy, &
+                               hessian=Hint1, fixed_atoms=nfrozen)
+               DEALLOCATE (Hint1, rmass)
+            END IF
+            CALL cp_print_key_finished_output(print_grrm, logger, force_env_section, "PRINT%GRRM")
+            !
+            ! Print SCINE interface file
+            print_scine = cp_print_key_unit_nr(logger, force_env_section, "PRINT%SCINE", &
+                                               file_position="REWIND", extension=".scine")
+            IF (print_scine > 0) THEN
+               DO i = 1, natoms
+                  imap = Mlist(i)
+                  particles(imap)%f(1:3) = rep_env%f((imap - 1)*3 + 1:(imap - 1)*3 + 3, 1)
+               END DO
+               nfrozen = SIZE(particles) - natoms
+               CPASSERT(nfrozen == 0)
+               CALL write_scine(print_scine, f_env%force_env, particles, minimum_energy, hessian=Hessian)
+            END IF
+            CALL cp_print_key_finished_output(print_scine, logger, force_env_section, "PRINT%SCINE")
+            !
+            ! Print NEWTONX interface file
+            print_namd = cp_print_key_unit_nr(logger, print_section, "NAMD_PRINT", &
+                                              extension=".eig", file_status="REPLACE", &
+                                              file_action="WRITE", do_backup=.TRUE., &
+                                              file_form="UNFORMATTED")
+            IF (print_namd > 0) THEN
+               ! NewtonX requires normalized Cartesian frequencies and eigenvectors
+               ! in full matrix format (ncoord x ncoord)
+               NULLIFY (Dfull)
+               ALLOCATE (Dfull(ncoord, ncoord))
+               ALLOCATE (Hint2Dfull(SIZE(Dfull, 2), SIZE(Dfull, 2)))
+               ALLOCATE (HeigvalDfull(SIZE(Dfull, 2)))
+               ALLOCATE (MatM(ncoord, ncoord))
+               ALLOCATE (rmass(SIZE(Dfull, 2)))
+               Dfull = 0.0_dp
+               ! Dfull in dimension of degrees of freedom
+               CALL build_D_matrix(RotTrM, nRotTrM, Dfull, full=.TRUE., natoms=natoms)
+               ! TEST MatM = MATMUL(TRANSPOSE(Dfull),Dfull)= 1
+               ! Hessian in MWC -> Hessian in INT (Hint2Dfull)
+               Hint2Dfull(:, :) = MATMUL(TRANSPOSE(Dfull), MATMUL(Hessian, Dfull))
+               ! Heig = L^T Hint2Dfull L
+               CALL diamat_all(Hint2Dfull, HeigvalDfull)
+               ! TEST  MatM = MATMUL(TRANSPOSE(Hint2Dfull),Hint2Dfull) = 1
+               ! TEST MatM=MATMUL(TRANSPOSE(MATMUL(Dfull,Hint2Dfull)),MATMUL(Dfull,Hint2Dfull)) = 1
+               MatM = 0.0_dp
+               DO i = 1, natoms
+                  DO j = 1, 3
+                     MatM((i - 1)*3 + j, (i - 1)*3 + j) = 1.0_dp/mass(i) ! mass is sqrt(mass)
+                  END DO
+               END DO
+               ! Dfull = Cartesian displacements of the normal modes
+               Dfull = MATMUL(MatM, MATMUL(Dfull, Hint2Dfull))  !Dfull=D L / sqrt(m)
+               DO i = 1, ncoord
+                  ! Renormalize displacements
+                  norm = 1.0_dp/SUM(Dfull(:, i)*Dfull(:, i))
+                  rmass(i) = norm/massunit
+                  Dfull(:, i) = SQRT(norm)*(Dfull(:, i))
+               END DO
+               CALL write_eigs_unformatted(print_namd, ncoord, HeigvalDfull, Dfull)
+               DEALLOCATE (HeigvalDfull)
+               DEALLOCATE (Hint2Dfull)
+               DEALLOCATE (Dfull)
+               DEALLOCATE (MatM)
+               DEALLOCATE (rmass)
+            END IF !print_namd
+            !
+            nvib = ncoord - nRotTrM
+            ALLOCATE (H_eigval1(ncoord))
+            ALLOCATE (H_eigval2(SIZE(D, 2)))
+            ALLOCATE (Hint1(ncoord, ncoord))
+            ALLOCATE (Hint2(SIZE(D, 2), SIZE(D, 2)))
+            ALLOCATE (rmass(SIZE(D, 2)))
+            ALLOCATE (konst(SIZE(D, 2)))
+            IF (calc_intens) THEN
+               ALLOCATE (dip_deriv(3, SIZE(D, 2)))
+               dip_deriv = 0.0_dp
+               ALLOCATE (polar_deriv(3, 3, SIZE(D, 2)))
+               polar_deriv = 0.0_dp
+            END IF
+            ALLOCATE (intensities_d(SIZE(D, 2)))
+            ALLOCATE (intensities_p(SIZE(D, 2)))
+            ALLOCATE (depol_p(SIZE(D, 2)))
+            ALLOCATE (depol_u(SIZE(D, 2)))
+            intensities_d = 0._dp
+            intensities_p = 0._dp
+            depol_p = 0._dp
+            depol_u = 0._dp
+            Hint1(:, :) = Hessian
+            CALL diamat_all(Hint1, H_eigval1)
+            IF (output_unit > 0) THEN
+               WRITE (output_unit, '(T2,"VIB| Cartesian Low frequencies ---",4G12.5)') &
+                  (H_eigval1(i), i=1, MIN(9, ncoord))
+               WRITE (output_unit, '(T2,A)') "VIB| Eigenvectors before removal of rotations and translations"
+               CALL write_particle_matrix(Hint1, particles, output_unit, el_per_part=3, &
+                                          Ilist=Mlist)
+            END IF
+            ! write frequencies and eigenvectors to cartesian eig file
+            IF (output_unit_eig > 0) THEN
+               CALL write_eigs_unformatted(output_unit_eig, ncoord, H_eigval1, Hint1)
+            END IF
+            IF (nvib /= 0) THEN
+               Hint2(:, :) = MATMUL(TRANSPOSE(D), MATMUL(Hessian, D))
+               IF (calc_intens) THEN
+                  DO i = 1, 3
+                     dip_deriv(i, :) = MATMUL(tmp_dip(:, i, 1), D)
+                  END DO
+                  DO i = 1, 3
+                     DO j = 1, 3
+                        polar_deriv(i, j, :) = MATMUL(tmp_polar(:, i, j, 1), D)
+                     END DO
+                  END DO
+               END IF
+               CALL diamat_all(Hint2, H_eigval2)
+               IF (output_unit > 0) THEN
+                  WRITE (output_unit, '(T2,"VIB| Frequencies after removal of the rotations and translations")')
+                  ! Frequency at the moment are in a.u.
+                  WRITE (output_unit, '(T2,"VIB| Internal  Low frequencies ---",4G12.5)') H_eigval2
+               END IF
+               Hessian = 0.0_dp
+               DO i = 1, natoms
+                  DO j = 1, 3
+                     Hessian((i - 1)*3 + j, (i - 1)*3 + j) = 1.0_dp/mass(i)
+                  END DO
+               END DO
+               ! Cartesian displacements of the normal modes
+               D = MATMUL(Hessian, MATMUL(D, Hint2))
+               DO i = 1, nvib
+                  norm = 1.0_dp/SUM(D(:, i)*D(:, i))
+                  ! Reduced Masess
+                  rmass(i) = norm/massunit
+                  ! Renormalize displacements and convert in Angstrom
+                  D(:, i) = SQRT(norm)*D(:, i)
+                  ! Force constants
+                  konst(i) = SIGN(1.0_dp, H_eigval2(i))*2.0_dp*pi**2*(ABS(H_eigval2(i))/massunit)**2*rmass(i)
+                  IF (calc_intens) THEN
+                     D_deriv = 0._dp
+                     DO j = 1, nvib
+                        D_deriv(:) = D_deriv(:) + dip_deriv(:, j)*Hint2(j, i)
+                     END DO
+                     intensities_d(i) = SQRT(DOT_PRODUCT(D_deriv, D_deriv))
+                     P_deriv = 0._dp
+                     DO j = 1, nvib
+                        ! P_deriv has units bohr^2/sqrt(a.u.)
+                        P_deriv(:, :) = P_deriv(:, :) + polar_deriv(:, :, j)*Hint2(j, i)
+                     END DO
+                     ! P_deriv now has units A^2/sqrt(amu)
+                     conver = angstrom**2*SQRT(massunit)
+                     P_deriv(:, :) = P_deriv(:, :)*conver
+                     ! this is wron, just for testing
+                     a1 = (P_deriv(1, 1) + P_deriv(2, 2) + P_deriv(3, 3))/3.0_dp
+                     a2 = (P_deriv(1, 1) - P_deriv(2, 2))**2 + &
+                          (P_deriv(2, 2) - P_deriv(3, 3))**2 + &
+                          (P_deriv(3, 3) - P_deriv(1, 1))**2
+                     a3 = (P_deriv(1, 2)**2 + P_deriv(2, 3)**2 + P_deriv(3, 1)**2)
+                     intensities_p(i) = 45.0_dp*a1*a1 + 7.0_dp/2.0_dp*(a2 + 6.0_dp*a3)
+                     ! to avoid division by zero:
+                     dummy = 45.0_dp*a1*a1 + 4.0_dp/2.0_dp*(a2 + 6.0_dp*a3)
+                     IF (dummy > 5.E-7_dp) THEN
+                        ! depolarization of plane polarized incident light
+                        depol_p(i) = 3.0_dp/2.0_dp*(a2 + 6.0_dp*a3)/(45.0_dp*a1*a1 + &
+                                                                     4.0_dp/2.0_dp*(a2 + 6.0_dp*a3))
+                        ! depolarization of unpolarized (natural) incident light
+                        depol_u(i) = 6.0_dp/2.0_dp*(a2 + 6.0_dp*a3)/(45.0_dp*a1*a1 + &
+                                                                     7.0_dp/2.0_dp*(a2 + 6.0_dp*a3))
+                     ELSE
+                        depol_p(i) = -1.0_dp
+                        depol_u(i) = -1.0_dp
+                     END IF
+                  END IF
+                  ! Convert frequencies to cm^-1
+                  H_eigval2(i) = SIGN(1.0_dp, H_eigval2(i))*SQRT(ABS(H_eigval2(i))*massunit)*vibfac/1000.0_dp
+               END DO
+               IF (calc_intens) THEN
+                  IF (iounit > 0) THEN
+                     IF (.NOT. intens_ir) THEN
+                        WRITE (iounit, '(T2,"VIB| No IR intensities available. Check input")')
+                     END IF
+                     IF (.NOT. intens_raman) THEN
+                        WRITE (iounit, '(T2,"VIB| No Raman intensities available. Check input")')
+                     END IF
+                  END IF
+               END IF
+               ! Dump Info
+               iw = cp_logger_get_default_io_unit(logger)
+               IF (iw > 0) THEN
+                  NULLIFY (din, pin, depp, depu)
+                  IF (intens_ir) din => intensities_d
+                  IF (intens_raman) pin => intensities_p
+                  IF (intens_raman) depp => depol_p
+                  IF (intens_raman) depu => depol_u
+                  CALL vib_out(iw, nvib, D, konst, rmass, H_eigval2, particles, Mlist, din, pin, depp, depu)
+               END IF
+               IF (.NOT. something_frozen .AND. calc_thchdata) THEN
+                  CALL get_thch_values(H_eigval2, iw, mass, nvib, inertia, 1, minimum_energy, tc_temp, tc_press)
+               END IF
+               CALL write_vibrations_molden(input, particles, H_eigval2, D, intensities_d, calc_intens, &
+                                            dump_only_positive=.FALSE., logger=logger, list=Mlist)
+            ELSE
+               IF (output_unit > 0) THEN
+                  WRITE (output_unit, '(T2,"VIB| No further vibrational info. Detected a single atom")')
+               END IF
+            END IF
+            ! Deallocate working arrays
+            DEALLOCATE (RotTrM)
+            DEALLOCATE (Clist)
+            DEALLOCATE (Mlist)
+            DEALLOCATE (H_eigval1)
+            DEALLOCATE (H_eigval2)
+            DEALLOCATE (Hint1)
+            DEALLOCATE (Hint2)
+            DEALLOCATE (rmass)
+            DEALLOCATE (konst)
+            DEALLOCATE (mass)
+            DEALLOCATE (pos0)
+            DEALLOCATE (D)
+            DEALLOCATE (Hessian)
+            IF (calc_intens) THEN
+               DEALLOCATE (dip_deriv)
+               DEALLOCATE (polar_deriv)
+               DEALLOCATE (tmp_dip)
+               DEALLOCATE (tmp_polar)
+            END IF
+            DEALLOCATE (intensities_d)
+            DEALLOCATE (intensities_p)
+            DEALLOCATE (depol_p)
+            DEALLOCATE (depol_u)
+            CALL f_env_rm_defaults(f_env, ierr)
+         END IF
+      END IF
+      CALL cp_print_key_finished_output(output_unit, logger, print_section, "PROGRAM_RUN_INFO")
+      CALL cp_print_key_finished_output(output_unit_eig, logger, print_section, "CARTESIAN_EIGS")
+      CALL rep_env_release(rep_env)
+      CALL timestop(handle)
+   END SUBROUTINE vb_anal
+
+! **************************************************************************************************
+!> \brief give back a list of moving atoms
+!> \param force_env ...
+!> \param Ilist ...
+!> \author Teodoro Laino 08.2006
+! **************************************************************************************************
+   SUBROUTINE get_moving_atoms(force_env, Ilist)
+      TYPE(force_env_type), POINTER                      :: force_env
+      INTEGER, DIMENSION(:), POINTER                     :: Ilist
+
+      CHARACTER(len=*), PARAMETER                        :: routineN = 'get_moving_atoms'
+
+      INTEGER                                            :: handle, i, ii, ikind, j, ndim, &
+                                                            nfixed_atoms, nfixed_atoms_total, nkind
+      INTEGER, ALLOCATABLE, DIMENSION(:)                 :: ifixd_list, work
+      TYPE(cp_subsys_type), POINTER                      :: subsys
+      TYPE(fixd_constraint_type), DIMENSION(:), POINTER  :: fixd_list
+      TYPE(molecule_kind_list_type), POINTER             :: molecule_kinds
+      TYPE(molecule_kind_type), DIMENSION(:), POINTER    :: molecule_kind_set
+      TYPE(molecule_kind_type), POINTER                  :: molecule_kind
+      TYPE(particle_list_type), POINTER                  :: particles
+      TYPE(particle_type), DIMENSION(:), POINTER         :: particle_set
+
+      CALL timeset(routineN, handle)
+      CALL force_env_get(force_env=force_env, subsys=subsys)
+
+      CALL cp_subsys_get(subsys=subsys, particles=particles, &
+                         molecule_kinds=molecule_kinds)
+
+      nkind = molecule_kinds%n_els
+      molecule_kind_set => molecule_kinds%els
+      particle_set => particles%els
+
+      ! Count the number of fixed atoms
+      nfixed_atoms_total = 0
+      DO ikind = 1, nkind
+         molecule_kind => molecule_kind_set(ikind)
+         CALL get_molecule_kind(molecule_kind, nfixd=nfixed_atoms)
+         nfixed_atoms_total = nfixed_atoms_total + nfixed_atoms
+      END DO
+      ndim = SIZE(particle_set) - nfixed_atoms_total
+      CPASSERT(ndim >= 0)
+      ALLOCATE (Ilist(ndim))
+
+      IF (nfixed_atoms_total /= 0) THEN
+         ALLOCATE (ifixd_list(nfixed_atoms_total))
+         ALLOCATE (work(nfixed_atoms_total))
+         nfixed_atoms_total = 0
+         DO ikind = 1, nkind
+            molecule_kind => molecule_kind_set(ikind)
+            CALL get_molecule_kind(molecule_kind, fixd_list=fixd_list)
+            IF (ASSOCIATED(fixd_list)) THEN
+               DO ii = 1, SIZE(fixd_list)
+                  IF (.NOT. fixd_list(ii)%restraint%active) THEN
+                     nfixed_atoms_total = nfixed_atoms_total + 1
+                     ifixd_list(nfixed_atoms_total) = fixd_list(ii)%fixd
+                  END IF
+               END DO
+            END IF
+         END DO
+         CALL sort(ifixd_list, nfixed_atoms_total, work)
+
+         ndim = 0
+         j = 1
+         Loop_count: DO i = 1, SIZE(particle_set)
+            DO WHILE (i > ifixd_list(j))
+               j = j + 1
+               IF (j > nfixed_atoms_total) EXIT Loop_count
+            END DO
+            IF (i /= ifixd_list(j)) THEN
+               ndim = ndim + 1
+               Ilist(ndim) = i
+            END IF
+         END DO Loop_count
+         DEALLOCATE (ifixd_list)
+         DEALLOCATE (work)
+      ELSE
+         i = 1
+         ndim = 0
+      END IF
+      DO j = i, SIZE(particle_set)
+         ndim = ndim + 1
+         Ilist(ndim) = j
+      END DO
+      CALL timestop(handle)
+
+   END SUBROUTINE get_moving_atoms
+
+! **************************************************************************************************
+!> \brief Dumps results of the vibrational analysis
+!> \param iw ...
+!> \param nvib ...
+!> \param D ...
+!> \param k ...
+!> \param m ...
+!> \param freq ...
+!> \param particles ...
+!> \param Mlist ...
+!> \param intensities_d ...
+!> \param intensities_p ...
+!> \param depol_p ...
+!> \param depol_u ...
+!> \author Teodoro Laino 08.2006
+! **************************************************************************************************
+   SUBROUTINE vib_out(iw, nvib, D, k, m, freq, particles, Mlist, intensities_d, intensities_p, &
+                      depol_p, depol_u)
+      INTEGER, INTENT(IN)                                :: iw, nvib
+      REAL(KIND=dp), DIMENSION(:, :), POINTER            :: D
+      REAL(KIND=dp), DIMENSION(:), INTENT(IN)            :: k, m, freq
+      TYPE(particle_type), DIMENSION(:), POINTER         :: particles
+      INTEGER, DIMENSION(:), POINTER                     :: Mlist
+      REAL(KIND=dp), DIMENSION(:), POINTER               :: intensities_d, intensities_p, depol_p, &
+                                                            depol_u
+
+      CHARACTER(LEN=2)                                   :: element_symbol
+      INTEGER                                            :: from, iatom, icol, j, jatom, katom, &
+                                                            natom, to
+      REAL(KIND=dp)                                      :: fint, pint
+
+      fint = 42.255_dp*massunit*debye**2*bohr**2
+      pint = 1.0_dp
+      natom = SIZE(D, 1)
+      WRITE (UNIT=iw, FMT="(/,T2,'VIB|',T30,'NORMAL MODES - CARTESIAN DISPLACEMENTS')")
+      WRITE (UNIT=iw, FMT="(T2,'VIB|')")
+      DO jatom = 1, nvib, 3
+         from = jatom
+         to = MIN(from + 2, nvib)
+         WRITE (UNIT=iw, FMT="(T2,'VIB|',13X,3(8X,I5,8X))") &
+            (icol, icol=from, to)
+         WRITE (UNIT=iw, FMT="(T2,'VIB|Frequency (cm^-1)',3(1X,F12.6,8X))") &
+            (freq(icol), icol=from, to)
+         IF (ASSOCIATED(intensities_d)) THEN
+            WRITE (UNIT=iw, FMT="(T2,'VIB|IR int (KM/Mole) ',3(1X,F12.6,8X))") &
+               (fint*intensities_d(icol)**2, icol=from, to)
+         END IF
+         IF (ASSOCIATED(intensities_p)) THEN
+            WRITE (UNIT=iw, FMT="(T2,'VIB|Raman (A^4/amu)  ',3(1X,F12.6,8X))") &
+               (pint*intensities_p(icol), icol=from, to)
+            WRITE (UNIT=iw, FMT="(T2,'VIB|Depol Ratio (P)  ',3(1X,F12.6,8X))") &
+               (depol_p(icol), icol=from, to)
+            WRITE (UNIT=iw, FMT="(T2,'VIB|Depol Ratio (U)  ',3(1X,F12.6,8X))") &
+               (depol_u(icol), icol=from, to)
+         END IF
+         WRITE (UNIT=iw, FMT="(T2,'VIB|Red.Masses (a.u.)',3(1X,F12.6,8X))") &
+            (m(icol), icol=from, to)
+         WRITE (UNIT=iw, FMT="(T2,'VIB|Frc consts (a.u.)',3(1X,F12.6,8X))") &
+            (k(icol), icol=from, to)
+         WRITE (UNIT=iw, FMT="(T2,' ATOM',2X,'EL',7X,3(4X,'  X  ',1X,'  Y  ',1X,'  Z  '))")
+         DO iatom = 1, natom, 3
+            katom = iatom/3
+            IF (MOD(iatom, 3) /= 0) katom = katom + 1
+            CALL get_atomic_kind(atomic_kind=particles(Mlist(katom))%atomic_kind, &
+                                 element_symbol=element_symbol)
+            WRITE (UNIT=iw, FMT="(T2,I5,2X,A2,7X,3(4X,2(F5.2,1X),F5.2))") &
+               Mlist(katom), element_symbol, &
+               ((D(iatom + j, icol), j=0, 2), icol=from, to)
+         END DO
+         WRITE (UNIT=iw, FMT="(/)")
+      END DO
+
+   END SUBROUTINE vib_out
+
+! **************************************************************************************************
+!> \brief Generates the transformation matrix from hessian in cartesian into
+!>      internal coordinates (based on Gram-Schmidt orthogonalization)
+!> \param mat ...
+!> \param dof ...
+!> \param Dout ...
+!> \param full ...
+!> \param natoms ...
+!> \author Teodoro Laino 08.2006
+! **************************************************************************************************
+   SUBROUTINE build_D_matrix(mat, dof, Dout, full, natoms)
+      REAL(KIND=dp), DIMENSION(:, :), POINTER            :: mat
+      INTEGER, INTENT(IN)                                :: dof
+      REAL(KIND=dp), DIMENSION(:, :), POINTER            :: Dout
+      LOGICAL, OPTIONAL                                  :: full
+      INTEGER, INTENT(IN)                                :: natoms
+
+      CHARACTER(len=*), PARAMETER                        :: routineN = 'build_D_matrix'
+
+      INTEGER                                            :: handle, i, ifound, iseq, j, nvib
+      LOGICAL                                            :: my_full
+      REAL(KIND=dp)                                      :: norm
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:)           :: work
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:, :)        :: D
+
+      CALL timeset(routineN, handle)
+      my_full = .TRUE.
+      IF (PRESENT(full)) my_full = full
+      ! Generate the missing vectors of the orthogonal basis set
+      nvib = 3*natoms - dof
+      ALLOCATE (work(3*natoms))
+      ALLOCATE (D(3*natoms, 3*natoms))
+      ! Check First orthogonality in the first element of the basis set
+      DO i = 1, dof
+         D(:, i) = mat(:, i)
+         DO j = i + 1, dof
+            norm = DOT_PRODUCT(mat(:, i), mat(:, j))
+            IF (ABS(norm) > thrs_motion) THEN
+               CPWARN("Orthogonality error in transformation matrix")
+            END IF
+         END DO
+      END DO
+      ! Generate the nvib orthogonal vectors
+      iseq = 0
+      ifound = 0
+      DO WHILE (ifound /= nvib)
+         iseq = iseq + 1
+         CPASSERT(iseq <= 3*natoms)
+         work = 0.0_dp
+         work(iseq) = 1.0_dp
+         ! Gram Schmidt orthogonalization
+         DO i = 1, dof + ifound
+            norm = DOT_PRODUCT(work, D(:, i))
+            work(:) = work - norm*D(:, i)
+         END DO
+         ! Check norm of the new generated vector
+         norm = SQRT(DOT_PRODUCT(work, work))
+         IF (norm >= 10E4_dp*thrs_motion) THEN
+            ! Accept new vector
+            ifound = ifound + 1
+            D(:, dof + ifound) = work/norm
+         END IF
+      END DO
+      CPASSERT(dof + ifound == 3*natoms)
+      IF (my_full) THEN
+         Dout = D
+      ELSE
+         Dout = D(:, dof + 1:)
+      END IF
+      DEALLOCATE (work)
+      DEALLOCATE (D)
+      CALL timestop(handle)
+   END SUBROUTINE build_D_matrix
+
+! **************************************************************************************************
+!> \brief Calculate a few thermochemical  properties from vibrational analysis
+!>         It is supposed to work for molecules in the gas phase and without constraints
+!> \param freqs ...
+!> \param iw ...
+!> \param mass ...
+!> \param nvib ...
+!> \param inertia ...
+!> \param spin ...
+!> \param totene ...
+!> \param temp ...
+!> \param pressure ...
+!> \author MI 10:2015
+! **************************************************************************************************
+
+   SUBROUTINE get_thch_values(freqs, iw, mass, nvib, inertia, spin, totene, temp, pressure)
+
+      REAL(KIND=dp), DIMENSION(:)                        :: freqs
+      INTEGER, INTENT(IN)                                :: iw
+      REAL(KIND=dp), DIMENSION(:)                        :: mass
+      INTEGER, INTENT(IN)                                :: nvib
+      REAL(KIND=dp), INTENT(IN)                          :: inertia(3)
+      INTEGER, INTENT(IN)                                :: spin
+      REAL(KIND=dp), INTENT(IN)                          :: totene, temp, pressure
+
+      INTEGER                                            :: i, natoms, sym_num
+      REAL(KIND=dp) :: el_entropy, entropy, exp_min_one, fact, fact2, freq_arg, freq_arg2, &
+         freqsum, Gibbs, heat_capacity, inertia_kg(3), mass_tot, one_min_exp, partition_function, &
+         rot_cv, rot_energy, rot_entropy, rot_part_func, rotvibtra, tran_cv, tran_energy, &
+         tran_enthalpy, tran_entropy, tran_part_func, vib_cv, vib_energy, vib_entropy, &
+         vib_part_func, zpe
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:)           :: mass_kg
+
+!    temp = 273.150_dp ! in Kelvin
+!    pressure = 101325.0_dp ! in Pascal
+
+      freqsum = 0.0_dp
+      DO i = 1, nvib
+         freqsum = freqsum + freqs(i)
+      END DO
+
+!   ZPE
+      zpe = 0.5_dp*(h_bar*2._dp*pi)*freqsum*(hertz/wavenumbers)*n_avogadro
+
+      el_entropy = (n_avogadro*boltzmann)*LOG(REAL(spin, KIND=dp))
+!
+      natoms = SIZE(mass)
+      ALLOCATE (mass_kg(natoms))
+      mass_kg(:) = mass(:)**2*e_mass
+      mass_tot = SUM(mass_kg)
+      inertia_kg = inertia*e_mass*(a_bohr**2)
+
+!   ROTATIONAL: Partition function and Entropy
+      sym_num = 1
+      fact = temp*2.0_dp*boltzmann/(h_bar*h_bar)
+      IF (inertia_kg(1)*inertia_kg(2)*inertia_kg(3) > 1.0_dp) THEN
+         rot_part_func = fact*fact*fact*inertia_kg(1)*inertia_kg(2)*inertia_kg(3)*pi
+         rot_part_func = SQRT(rot_part_func)
+         rot_entropy = n_avogadro*boltzmann*(LOG(rot_part_func) + 1.5_dp)
+         rot_energy = 1.5_dp*n_avogadro*boltzmann*temp
+         rot_cv = 1.5_dp*n_avogadro*boltzmann
+      ELSE
+         !linear molecule
+         IF (inertia_kg(1) > 1.0_dp) THEN
+            rot_part_func = fact*inertia_kg(1)
+         ELSE IF (inertia_kg(2) > 1.0_dp) THEN
+            rot_part_func = fact*inertia_kg(2)
+         ELSE
+            rot_part_func = fact*inertia_kg(3)
+         END IF
+         rot_entropy = n_avogadro*boltzmann*(LOG(rot_part_func) + 1.0_dp)
+         rot_energy = n_avogadro*boltzmann*temp
+         rot_cv = n_avogadro*boltzmann
+      END IF
+
+!   TRANSLATIONAL: Partition function and Entropy
+      tran_part_func = (boltzmann*temp)**2.5_dp/(pressure*(h_bar*2.0_dp*pi)**3.0_dp)*(2.0_dp*pi*mass_tot)**1.5_dp
+      tran_entropy = n_avogadro*boltzmann*(LOG(tran_part_func) + 2.5_dp)
+      tran_energy = 1.5_dp*n_avogadro*boltzmann*temp
+      tran_enthalpy = 2.5_dp*n_avogadro*boltzmann*temp
+      tran_cv = 2.5_dp*n_avogadro*boltzmann
+
+!   VIBRATIONAL:  Partition function and Entropy
+      vib_part_func = 1.0_dp
+      vib_energy = 0.0_dp
+      vib_entropy = 0.0_dp
+      vib_cv = 0.0_dp
+      fact = 2.0_dp*pi*h_bar/boltzmann/temp*hertz/wavenumbers
+      fact2 = 2.0_dp*pi*h_bar*hertz/wavenumbers
+      DO i = 1, nvib
+         freq_arg = fact*freqs(i)
+         freq_arg2 = fact2*freqs(i)
+         exp_min_one = EXP(freq_arg) - 1.0_dp
+         one_min_exp = 1.0_dp - EXP(-freq_arg)
+!dbg
+!  write(*,*) 'freq ', i, freqs(i), exp_min_one , one_min_exp
+!      vib_part_func = vib_part_func*(1.0_dp/(1.0_dp - exp(-fact*freqs(i))))
+         vib_part_func = vib_part_func*(1.0_dp/one_min_exp)
+!      vib_energy = vib_energy + fact2*freqs(i)*0.5_dp+fact2*freqs(i)/(exp(fact*freqs(i))-1.0_dp)
+         vib_energy = vib_energy + freq_arg2*0.5_dp + freq_arg2/exp_min_one
+!      vib_entropy = vib_entropy +fact*freqs(i)/(exp(fact*freqs(i))-1.0_dp)-log(1.0_dp - exp(-fact*freqs(i)))
+         vib_entropy = vib_entropy + freq_arg/exp_min_one - LOG(one_min_exp)
+!      vib_cv = vib_cv + fact*fact*freqs(i)*freqs(i)*exp(fact*freqs(i))/(exp(fact*freqs(i))-1.0_dp)/(exp(fact*freqs(i))-1.0_dp)
+         vib_cv = vib_cv + freq_arg*freq_arg*EXP(freq_arg)/exp_min_one/exp_min_one
+      END DO
+      vib_energy = vib_energy*n_avogadro ! it contains already ZPE
+      vib_entropy = vib_entropy*(n_avogadro*boltzmann)
+      vib_cv = vib_cv*(n_avogadro*boltzmann)
+
+!   SUMMARY
+!dbg
+!    write(*,*) 'part ', rot_part_func,tran_part_func,vib_part_func
+      partition_function = rot_part_func*tran_part_func*vib_part_func
+!dbg
+!    write(*,*) 'entropy ', el_entropy,rot_entropy,tran_entropy,vib_entropy
+
+      entropy = el_entropy + rot_entropy + tran_entropy + vib_entropy
+!dbg
+!    write(*,*) 'energy ', rot_energy , tran_enthalpy , vib_energy, totene*kjmol*1000.0_dp
+
+      rotvibtra = rot_energy + tran_enthalpy + vib_energy
+!dbg
+!    write(*,*) 'cv ', rot_cv, tran_cv, vib_cv
+      heat_capacity = vib_cv + tran_cv + rot_cv
+
+!   Free energy in J/mol: internal energy + PV - TS
+      Gibbs = vib_energy + rot_energy + tran_enthalpy - temp*entropy
+
+      DEALLOCATE (mass_kg)
+
+      IF (iw > 0) THEN
+         WRITE (UNIT=iw, FMT="(/,T2,'VIB|',T30,'NORMAL MODES - THERMOCHEMICAL DATA')")
+         WRITE (UNIT=iw, FMT="(T2,'VIB|')")
+
+         WRITE (UNIT=iw, FMT="(T2,'VIB|', T20, 'Symmetry number:',T70,I16)") sym_num
+         WRITE (UNIT=iw, FMT="(T2,'VIB|', T20, 'Temperature [K]:',T70,F16.2)") temp
+         WRITE (UNIT=iw, FMT="(T2,'VIB|', T20, 'Pressure [Pa]:',T70,F16.2)") pressure
+
+         WRITE (UNIT=iw, FMT="(/)")
+
+         WRITE (UNIT=iw, FMT="(T2,'VIB|', T20, 'Electronic energy (U) [kJ/mol]:',T60,F26.8)") totene*kjmol
+         WRITE (UNIT=iw, FMT="(T2,'VIB|', T20, 'Zero-point correction [kJ/mol]:',T60,F26.8)") zpe/1000.0_dp
+         WRITE (UNIT=iw, FMT="(T2,'VIB|', T20, 'Entropy [kJ/(mol K)]:',T60,F26.8)") entropy/1000.0_dp
+         WRITE (UNIT=iw, FMT="(T2,'VIB|', T20, 'Enthalpy correction (H-U) [kJ/mol]:',T60,F26.8)") rotvibtra/1000.0_dp
+         WRITE (UNIT=iw, FMT="(T2,'VIB|', T20, 'Gibbs energy correction [kJ/mol]:',T60,F26.8)") Gibbs/1000.0_dp
+         WRITE (UNIT=iw, FMT="(T2,'VIB|', T20, 'Heat capacity [kJ/(mol*K)]:',T70,F16.8)") heat_capacity/1000.0_dp
+         WRITE (UNIT=iw, FMT="(/)")
+      END IF
+
+   END SUBROUTINE get_thch_values
+
+! **************************************************************************************************
+!> \brief write out the non-orthogalized, i.e. without rotation and translational symmetry removed,
+!>        eigenvalues and eigenvectors of the Cartesian Hessian in unformatted binary file
+!> \param unit : the output unit to write to
+!> \param dof  : total degrees of freedom, i.e. the rank of the Hessian matrix
+!> \param eigenvalues  : eigenvalues of the Hessian matrix
+!> \param eigenvectors : matrix with each column being the eigenvectors of the Hessian matrix
+!> \author Lianheng Tong - 2016/04/20
+! **************************************************************************************************
+   SUBROUTINE write_eigs_unformatted(unit, dof, eigenvalues, eigenvectors)
+      INTEGER, INTENT(IN)                                :: unit, dof
+      REAL(KIND=dp), DIMENSION(:), INTENT(IN)            :: eigenvalues
+      REAL(KIND=dp), DIMENSION(:, :), INTENT(IN)         :: eigenvectors
+
+      CHARACTER(len=*), PARAMETER :: routineN = 'write_eigs_unformatted'
+
+      INTEGER                                            :: handle, jj
+
+      CALL timeset(routineN, handle)
+      IF (unit .GT. 0) THEN
+         ! degrees of freedom, i.e. the rank
+         WRITE (unit) dof
+         ! eigenvalues in one record
+         WRITE (unit) eigenvalues(1:dof)
+         ! eigenvectors: each record contains an eigenvector
+         DO jj = 1, dof
+            WRITE (unit) eigenvectors(1:dof, jj)
+         END DO
+      END IF
+      CALL timestop(handle)
+
+   END SUBROUTINE write_eigs_unformatted
+
+!**************************************************************************************************
+!> \brief Write the Hessian matrix into a (unformatted) binary file
+!> \param vib_section vibrational analysis section
+!> \param para_env mpi environment
+!> \param ncoord 3 times the number of atoms
+!> \param globenv global environment
+!> \param Hessian the Hessian matrix
+!> \param logger the logger
+! **************************************************************************************************
+   SUBROUTINE write_va_hessian(vib_section, para_env, ncoord, globenv, Hessian, logger)
+
+      TYPE(section_vals_type), POINTER                   :: vib_section
+      TYPE(cp_para_env_type), POINTER                    :: para_env
+      INTEGER                                            :: ncoord
+      TYPE(global_environment_type), POINTER             :: globenv
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:, :)        :: Hessian
+      TYPE(cp_logger_type), POINTER                      :: logger
+
+      CHARACTER(LEN=*), PARAMETER                        :: routineN = 'write_va_hessian'
+
+      INTEGER                                            :: handle, hesunit, i, j, ndf
+      TYPE(cp_blacs_env_type), POINTER                   :: blacs_env
+      TYPE(cp_fm_struct_type), POINTER                   :: fm_struct_hes
+      TYPE(cp_fm_type)                                   :: hess_mat
+
+      CALL timeset(routineN, handle)
+
+      hesunit = cp_print_key_unit_nr(logger, vib_section, "PRINT%HESSIAN", &
+                                     extension=".hess", file_form="UNFORMATTED", file_action="WRITE", &
+                                     file_position="REWIND")
+
+      NULLIFY (blacs_env)
+      CALL cp_blacs_env_create(blacs_env, para_env, globenv%blacs_grid_layout, &
+                               globenv%blacs_repeatable)
+      ndf = ncoord
+      CALL cp_fm_struct_create(fm_struct_hes, para_env=para_env, context=blacs_env, &
+                               nrow_global=ndf, ncol_global=ndf)
+      CALL cp_fm_create(hess_mat, fm_struct_hes, name="hess_mat")
+      CALL cp_fm_set_all(hess_mat, alpha=0.0_dp, beta=0.0_dp)
+
+      DO i = 1, ncoord
+         DO j = 1, ncoord
+            CALL cp_fm_set_element(hess_mat, i, j, Hessian(i, j))
+         END DO
+      END DO
+      CALL cp_fm_write_unformatted(hess_mat, hesunit)
+
+      CALL cp_print_key_finished_output(hesunit, logger, vib_section, "PRINT%HESSIAN")
+
+      CALL cp_fm_struct_release(fm_struct_hes)
+      CALL cp_fm_release(hess_mat)
+      CALL cp_blacs_env_release(blacs_env)
+
+      CALL timestop(handle)
+
+   END SUBROUTINE write_va_hessian
+
+END MODULE vibrational_analysis

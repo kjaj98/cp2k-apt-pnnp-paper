@@ -1,0 +1,1301 @@
+!--------------------------------------------------------------------------------------------------!
+!   CP2K: A general program to perform molecular dynamics simulations                              !
+!   Copyright 2000-2022 CP2K developers group <https://cp2k.org>                                   !
+!                                                                                                  !
+!   SPDX-License-Identifier: GPL-2.0-or-later                                                      !
+!--------------------------------------------------------------------------------------------------!
+
+! **************************************************************************************************
+!> \brief Routines to calculate the 3 and 2 center ERI's needed in the RI
+!>        approximation using libint
+!> \par History
+!>      08.2013 created [Mauro Del Ben]
+!> \author Mauro Del Ben
+! **************************************************************************************************
+MODULE mp2_ri_libint
+   USE atomic_kind_types,               ONLY: atomic_kind_type,&
+                                              get_atomic_kind_set
+   USE basis_set_types,                 ONLY: get_gto_basis_set,&
+                                              gto_basis_set_type,&
+                                              init_aux_basis_set
+   USE cell_types,                      ONLY: cell_type
+   USE cp_blacs_env,                    ONLY: cp_blacs_env_create,&
+                                              cp_blacs_env_release,&
+                                              cp_blacs_env_type
+   USE cp_control_types,                ONLY: dft_control_type
+   USE cp_files,                        ONLY: close_file,&
+                                              open_file
+   USE cp_fm_basic_linalg,              ONLY: cp_fm_triangular_invert
+   USE cp_fm_cholesky,                  ONLY: cp_fm_cholesky_decompose
+   USE cp_fm_struct,                    ONLY: cp_fm_struct_create,&
+                                              cp_fm_struct_release,&
+                                              cp_fm_struct_type
+   USE cp_fm_types,                     ONLY: cp_fm_create,&
+                                              cp_fm_get_submatrix,&
+                                              cp_fm_release,&
+                                              cp_fm_set_submatrix,&
+                                              cp_fm_type
+   USE cp_para_types,                   ONLY: cp_para_env_type
+   USE gamma,                           ONLY: init_md_ftable
+   USE hfx_energy_potential,            ONLY: coulomb4
+   USE hfx_pair_list_methods,           ONLY: build_pair_list_mp2
+   USE hfx_screening_methods,           ONLY: calc_pair_dist_radii,&
+                                              calc_screening_functions
+   USE hfx_types,                       ONLY: &
+        hfx_basis_info_type, hfx_basis_type, hfx_create_neighbor_cells, hfx_pgf_list, &
+        hfx_pgf_product_list, hfx_potential_type, hfx_screen_coeff_type, hfx_type, log_zero, &
+        pair_set_list_type
+   USE input_constants,                 ONLY: do_potential_TShPSC,&
+                                              do_potential_long
+   USE kinds,                           ONLY: dp,&
+                                              int_8
+   USE libint_wrapper,                  ONLY: cp_libint_t
+   USE message_passing,                 ONLY: mp_sum
+   USE mp2_types,                       ONLY: init_TShPSC_lmax,&
+                                              mp2_biel_type,&
+                                              mp2_type,&
+                                              pair_list_type_mp2
+   USE orbital_pointers,                ONLY: nco,&
+                                              ncoset,&
+                                              nso
+   USE particle_types,                  ONLY: particle_type
+   USE qs_environment_types,            ONLY: get_qs_env,&
+                                              qs_environment_type
+   USE qs_kind_types,                   ONLY: get_qs_kind,&
+                                              get_qs_kind_set,&
+                                              qs_kind_type
+   USE t_sh_p_s_c,                      ONLY: free_C0,&
+                                              init
+#include "./base/base_uses.f90"
+
+   IMPLICIT NONE
+   PRIVATE
+
+   PUBLIC ::  libint_ri_mp2, read_RI_basis_set, release_RI_basis_set, prepare_integral_calc
+
+   CHARACTER(len=*), PARAMETER, PRIVATE :: moduleN = 'mp2_ri_libint'
+
+!***
+
+CONTAINS
+
+! **************************************************************************************************
+!> \brief ...
+!> \param dimen ...
+!> \param RI_dimen ...
+!> \param occupied ...
+!> \param natom ...
+!> \param mp2_biel ...
+!> \param mp2_env ...
+!> \param C ...
+!> \param kind_of ...
+!> \param RI_basis_parameter ...
+!> \param RI_basis_info ...
+!> \param basis_S0 ...
+!> \param RI_index_table ...
+!> \param qs_env ...
+!> \param para_env ...
+!> \param Lai ...
+! **************************************************************************************************
+   SUBROUTINE libint_ri_mp2(dimen, RI_dimen, occupied, natom, mp2_biel, mp2_env, C, &
+                            kind_of, &
+                            RI_basis_parameter, RI_basis_info, basis_S0, RI_index_table, &
+                            qs_env, para_env, &
+                            Lai)
+      INTEGER                                            :: dimen, RI_dimen, occupied, natom
+      TYPE(mp2_biel_type)                                :: mp2_biel
+      TYPE(mp2_type)                                     :: mp2_env
+      REAL(KIND=dp), DIMENSION(dimen, dimen)             :: C
+      INTEGER, DIMENSION(:)                              :: kind_of
+      TYPE(hfx_basis_type), DIMENSION(:), POINTER        :: RI_basis_parameter
+      TYPE(hfx_basis_info_type)                          :: RI_basis_info
+      TYPE(hfx_basis_type), DIMENSION(:), POINTER        :: basis_S0
+      INTEGER, ALLOCATABLE, DIMENSION(:, :)              :: RI_index_table
+      TYPE(qs_environment_type), POINTER                 :: qs_env
+      TYPE(cp_para_env_type), POINTER                    :: para_env
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:, :, :)     :: Lai
+
+      CHARACTER(LEN=*), PARAMETER                        :: routineN = 'libint_ri_mp2'
+
+      INTEGER                                            :: handle, nkind
+
+      CALL timeset(routineN, handle)
+
+      ! Get the RI basis set and store in to a nice form
+      IF (.NOT. (ASSOCIATED(RI_basis_parameter))) THEN
+         IF (ALLOCATED(RI_index_table)) DEALLOCATE (RI_index_table)
+         IF (ASSOCIATED(basis_S0)) DEALLOCATE (basis_S0)
+         CALL read_RI_basis_set(qs_env, RI_basis_parameter, RI_basis_info, &
+                                natom, nkind, kind_of, RI_index_table, RI_dimen, &
+                                basis_S0)
+      END IF
+
+      CALL calc_lai_libint(mp2_env, qs_env, para_env, &
+                           mp2_biel, dimen, C, occupied, &
+                           RI_basis_parameter, RI_basis_info, RI_index_table, RI_dimen, basis_S0, &
+                           Lai)
+
+      CALL timestop(handle)
+
+   END SUBROUTINE libint_ri_mp2
+
+! **************************************************************************************************
+!> \brief Read the auxiliary basis set for RI approxiamtion
+!> \param qs_env ...
+!> \param RI_basis_parameter ...
+!> \param RI_basis_info ...
+!> \param natom ...
+!> \param nkind ...
+!> \param kind_of ...
+!> \param RI_index_table ...
+!> \param RI_dimen ...
+!> \param basis_S0 ...
+!> \par History
+!>      08.2013 created [Mauro Del Ben]
+!> \author Mauro Del Ben
+! **************************************************************************************************
+   SUBROUTINE read_RI_basis_set(qs_env, RI_basis_parameter, RI_basis_info, &
+                                natom, nkind, kind_of, RI_index_table, RI_dimen, &
+                                basis_S0)
+      TYPE(qs_environment_type), POINTER                 :: qs_env
+      TYPE(hfx_basis_type), DIMENSION(:), POINTER        :: RI_basis_parameter
+      TYPE(hfx_basis_info_type)                          :: RI_basis_info
+      INTEGER                                            :: natom, nkind
+      INTEGER, DIMENSION(:)                              :: kind_of
+      INTEGER, ALLOCATABLE, DIMENSION(:, :)              :: RI_index_table
+      INTEGER                                            :: RI_dimen
+      TYPE(hfx_basis_type), DIMENSION(:), POINTER        :: basis_S0
+
+      INTEGER :: co_counter, counter, i, iatom, ikind, ipgf, iset, j, k, la, max_am_kind, &
+         max_coeff, max_nsgfl, max_pgf, max_pgf_kind, max_set, nl_count, nset, nseta, offset_a, &
+         offset_a1, s_offset_nl_a, sgfa, so_counter
+      INTEGER, DIMENSION(:), POINTER                     :: la_max, la_min, npgfa, nshell
+      INTEGER, DIMENSION(:, :), POINTER                  :: first_sgfa, nl_a
+      REAL(dp), DIMENSION(:, :), POINTER                 :: sphi_a
+      TYPE(gto_basis_set_type), POINTER                  :: orb_basis_a
+      TYPE(qs_kind_type), DIMENSION(:), POINTER          :: qs_kind_set
+      TYPE(qs_kind_type), POINTER                        :: atom_kind
+
+      NULLIFY (RI_basis_parameter)
+
+      NULLIFY (qs_kind_set)
+      CALL get_qs_env(qs_env=qs_env, qs_kind_set=qs_kind_set)
+
+      nkind = SIZE(qs_kind_set, 1)
+      ALLOCATE (RI_basis_parameter(nkind))
+      ALLOCATE (basis_S0(nkind))
+      max_set = 0
+      DO ikind = 1, nkind
+         NULLIFY (atom_kind)
+         atom_kind => qs_kind_set(ikind)
+         ! here we reset the initial RI basis such that we can
+         ! work with non-normalized auxiliary basis functions
+         CALL get_qs_kind(qs_kind=atom_kind, &
+                          basis_set=orb_basis_a, basis_type="RI_AUX")
+         IF (.NOT. (ASSOCIATED(orb_basis_a))) THEN
+            CPABORT("Initial RI auxiliary basis not specified.")
+         END IF
+         orb_basis_a%gcc = 1.0_dp
+         orb_basis_a%norm_type = 1
+         CALL init_aux_basis_set(orb_basis_a)
+
+         CALL get_qs_kind_set(qs_kind_set=qs_kind_set, &
+                              maxsgf=RI_basis_info%max_sgf, &
+                              maxnset=RI_basis_info%max_set, &
+                              maxlgto=RI_basis_info%max_am, &
+                              basis_type="RI_AUX")
+         CALL get_gto_basis_set(gto_basis_set=orb_basis_a, &
+                                lmax=RI_basis_parameter(ikind)%lmax, &
+                                lmin=RI_basis_parameter(ikind)%lmin, &
+                                npgf=RI_basis_parameter(ikind)%npgf, &
+                                nset=RI_basis_parameter(ikind)%nset, &
+                                zet=RI_basis_parameter(ikind)%zet, &
+                                nsgf_set=RI_basis_parameter(ikind)%nsgf, &
+                                first_sgf=RI_basis_parameter(ikind)%first_sgf, &
+                                sphi=RI_basis_parameter(ikind)%sphi, &
+                                nsgf=RI_basis_parameter(ikind)%nsgf_total, &
+                                l=RI_basis_parameter(ikind)%nl, &
+                                nshell=RI_basis_parameter(ikind)%nshell, &
+                                set_radius=RI_basis_parameter(ikind)%set_radius, &
+                                pgf_radius=RI_basis_parameter(ikind)%pgf_radius, &
+                                kind_radius=RI_basis_parameter(ikind)%kind_radius)
+
+         max_set = MAX(max_set, RI_basis_parameter(ikind)%nset)
+
+         basis_S0(ikind)%kind_radius = RI_basis_parameter(ikind)%kind_radius
+         basis_S0(ikind)%nset = 1
+         basis_S0(ikind)%nsgf_total = 1
+         ALLOCATE (basis_S0(ikind)%set_radius(1))
+         basis_S0(ikind)%set_radius(1) = RI_basis_parameter(ikind)%kind_radius
+         ALLOCATE (basis_S0(ikind)%lmax(1))
+         basis_S0(ikind)%lmax(1) = 0
+         ALLOCATE (basis_S0(ikind)%lmin(1))
+         basis_S0(ikind)%lmin(1) = 0
+         ALLOCATE (basis_S0(ikind)%npgf(1))
+         basis_S0(ikind)%npgf(1) = 1
+         ALLOCATE (basis_S0(ikind)%nsgf(1))
+         basis_S0(ikind)%nsgf(1) = 1
+         ALLOCATE (basis_S0(ikind)%nshell(1))
+         basis_S0(ikind)%nshell(1) = 1
+         ALLOCATE (basis_S0(ikind)%pgf_radius(1, 1))
+         basis_S0(ikind)%pgf_radius(1, 1) = RI_basis_parameter(ikind)%kind_radius
+         ALLOCATE (basis_S0(ikind)%sphi(1, 1))
+         basis_S0(ikind)%sphi(1, 1) = 1.0_dp
+         ALLOCATE (basis_S0(ikind)%zet(1, 1))
+         basis_S0(ikind)%zet(1, 1) = 0.0_dp
+         ALLOCATE (basis_S0(ikind)%first_sgf(1, 1))
+         basis_S0(ikind)%first_sgf(1, 1) = 1
+         ALLOCATE (basis_S0(ikind)%nl(1, 1))
+         basis_S0(ikind)%nl(1, 1) = 0
+
+         ALLOCATE (basis_S0(ikind)%nsgfl(0:0, 1))
+         basis_S0(ikind)%nsgfl = 1
+         ALLOCATE (basis_S0(ikind)%sphi_ext(1, 0:0, 1, 1))
+         basis_S0(ikind)%sphi_ext(1, 0, 1, 1) = 1.0_dp
+
+      END DO
+      RI_basis_info%max_set = max_set
+
+      DO ikind = 1, nkind
+         ALLOCATE (RI_basis_parameter(ikind)%nsgfl(0:RI_basis_info%max_am, max_set))
+         RI_basis_parameter(ikind)%nsgfl = 0
+         nset = RI_basis_parameter(ikind)%nset
+         nshell => RI_basis_parameter(ikind)%nshell
+         DO iset = 1, nset
+            DO i = 0, RI_basis_info%max_am
+               nl_count = 0
+               DO j = 1, nshell(iset)
+                  IF (RI_basis_parameter(ikind)%nl(j, iset) == i) nl_count = nl_count + 1
+               END DO
+               RI_basis_parameter(ikind)%nsgfl(i, iset) = nl_count
+            END DO
+         END DO
+      END DO
+
+      max_nsgfl = 0
+      max_pgf = 0
+      DO ikind = 1, nkind
+         max_coeff = 0
+         max_am_kind = 0
+         max_pgf_kind = 0
+         npgfa => RI_basis_parameter(ikind)%npgf
+         nseta = RI_basis_parameter(ikind)%nset
+         nl_a => RI_basis_parameter(ikind)%nsgfl
+         la_max => RI_basis_parameter(ikind)%lmax
+         la_min => RI_basis_parameter(ikind)%lmin
+         DO iset = 1, nseta
+            max_pgf_kind = MAX(max_pgf_kind, npgfa(iset))
+            max_pgf = MAX(max_pgf, npgfa(iset))
+            DO la = la_min(iset), la_max(iset)
+               max_nsgfl = MAX(max_nsgfl, nl_a(la, iset))
+               max_coeff = MAX(max_coeff, nso(la)*nl_a(la, iset)*nco(la))
+               max_am_kind = MAX(max_am_kind, la)
+            END DO
+         END DO
+         ALLOCATE (RI_basis_parameter(ikind)%sphi_ext(max_coeff, 0:max_am_kind, max_pgf_kind, nseta))
+         RI_basis_parameter(ikind)%sphi_ext = 0.0_dp
+      END DO
+
+      DO ikind = 1, nkind
+         sphi_a => RI_basis_parameter(ikind)%sphi
+         nseta = RI_basis_parameter(ikind)%nset
+         la_max => RI_basis_parameter(ikind)%lmax
+         la_min => RI_basis_parameter(ikind)%lmin
+         npgfa => RI_basis_parameter(ikind)%npgf
+         first_sgfa => RI_basis_parameter(ikind)%first_sgf
+         nl_a => RI_basis_parameter(ikind)%nsgfl
+         DO iset = 1, nseta
+            sgfa = first_sgfa(1, iset)
+            DO ipgf = 1, npgfa(iset)
+               offset_a1 = (ipgf - 1)*ncoset(la_max(iset))
+               s_offset_nl_a = 0
+               DO la = la_min(iset), la_max(iset)
+                  offset_a = offset_a1 + ncoset(la - 1)
+                  co_counter = 0
+                  co_counter = co_counter + 1
+                  so_counter = 0
+                  DO k = sgfa + s_offset_nl_a, sgfa + s_offset_nl_a + nso(la)*nl_a(la, iset) - 1
+                     DO i = offset_a + 1, offset_a + nco(la)
+                        so_counter = so_counter + 1
+                        RI_basis_parameter(ikind)%sphi_ext(so_counter, la, ipgf, iset) = sphi_a(i, k)
+                     END DO
+                  END DO
+                  s_offset_nl_a = s_offset_nl_a + nso(la)*(nl_a(la, iset))
+               END DO
+            END DO
+         END DO
+      END DO
+
+      ALLOCATE (RI_index_table(natom, max_set))
+      RI_index_table = -HUGE(0)
+      counter = 0
+      RI_dimen = 0
+      DO iatom = 1, natom
+         ikind = kind_of(iatom)
+         nset = RI_basis_parameter(ikind)%nset
+         DO iset = 1, nset
+            RI_index_table(iatom, iset) = counter + 1
+            counter = counter + RI_basis_parameter(ikind)%nsgf(iset)
+            RI_dimen = RI_dimen + RI_basis_parameter(ikind)%nsgf(iset)
+         END DO
+      END DO
+
+   END SUBROUTINE read_RI_basis_set
+
+! **************************************************************************************************
+!> \brief Release the auxiliary basis set for RI approxiamtion (to be used
+!>        only in the case of basis optimization)
+!> \param RI_basis_parameter ...
+!> \param basis_S0 ...
+!> \par History
+!>      08.2013 created [Mauro Del Ben]
+!> \author Mauro Del Ben
+! **************************************************************************************************
+   SUBROUTINE release_RI_basis_set(RI_basis_parameter, basis_S0)
+      TYPE(hfx_basis_type), DIMENSION(:), POINTER        :: RI_basis_parameter, basis_S0
+
+      INTEGER                                            :: i
+
+! RI basis
+
+      DO i = 1, SIZE(RI_basis_parameter)
+         DEALLOCATE (RI_basis_parameter(i)%nsgfl)
+         DEALLOCATE (RI_basis_parameter(i)%sphi_ext)
+      END DO
+      DEALLOCATE (RI_basis_parameter)
+
+      ! S0 basis
+      DO i = 1, SIZE(basis_S0)
+         DEALLOCATE (basis_S0(i)%set_radius)
+         DEALLOCATE (basis_S0(i)%lmax)
+         DEALLOCATE (basis_S0(i)%lmin)
+         DEALLOCATE (basis_S0(i)%npgf)
+         DEALLOCATE (basis_S0(i)%nsgf)
+         DEALLOCATE (basis_S0(i)%nshell)
+         DEALLOCATE (basis_S0(i)%pgf_radius)
+         DEALLOCATE (basis_S0(i)%sphi)
+         DEALLOCATE (basis_S0(i)%zet)
+         DEALLOCATE (basis_S0(i)%first_sgf)
+         DEALLOCATE (basis_S0(i)%nl)
+         DEALLOCATE (basis_S0(i)%nsgfl)
+         DEALLOCATE (basis_S0(i)%sphi_ext)
+      END DO
+      DEALLOCATE (basis_S0)
+
+   END SUBROUTINE release_RI_basis_set
+
+! **************************************************************************************************
+!> \brief ...
+!> \param mp2_env ...
+!> \param qs_env   ...
+!> \param para_env ...
+!> \param mp2_biel ...
+!> \param dimen ...
+!> \param C ...
+!> \param occupied ...
+!> \param RI_basis_parameter ...
+!> \param RI_basis_info ...
+!> \param RI_index_table ...
+!> \param RI_dimen ...
+!> \param basis_S0 ...
+!> \param Lai ...
+!> \par History
+!>      08.2013 created [Mauro Del Ben]
+!> \author Mauro Del Ben
+! **************************************************************************************************
+   SUBROUTINE calc_lai_libint(mp2_env, qs_env, para_env, &
+                              mp2_biel, dimen, C, occupied, &
+                              RI_basis_parameter, RI_basis_info, RI_index_table, RI_dimen, basis_S0, &
+                              Lai)
+
+      TYPE(mp2_type)                                     :: mp2_env
+      TYPE(qs_environment_type), POINTER                 :: qs_env
+      TYPE(cp_para_env_type), POINTER                    :: para_env
+      TYPE(mp2_biel_type)                                :: mp2_biel
+      INTEGER                                            :: dimen
+      REAL(KIND=dp), DIMENSION(dimen, dimen)             :: C
+      INTEGER                                            :: occupied
+      TYPE(hfx_basis_type), DIMENSION(:), POINTER        :: RI_basis_parameter
+      TYPE(hfx_basis_info_type)                          :: RI_basis_info
+      INTEGER, ALLOCATABLE, DIMENSION(:, :)              :: RI_index_table
+      INTEGER                                            :: RI_dimen
+      TYPE(hfx_basis_type), DIMENSION(:), POINTER        :: basis_S0
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:, :, :)     :: Lai
+
+      CHARACTER(LEN=*), PARAMETER                        :: routineN = 'calc_lai_libint'
+
+      INTEGER :: counter_L_blocks, handle, i, i_list_kl, i_set_list_kl, i_set_list_kl_start, &
+         i_set_list_kl_stop, iatom, iatom_end, iatom_start, iiB, ikind, info_chol, iset, jatom, &
+         jatom_end, jatom_start, jjB, jkind, jset, katom, katom_end, katom_start, kkB, kkind, &
+         kset, kset_start, L_B_i_end, L_B_i_start, L_B_k_end, L_B_k_start, latom, latom_end, &
+         latom_start, lkind, llB, lset, max_pgf, max_set, natom, ncob, nints, nseta, nsetb, nsetc, &
+         nsetd, nsgf_max, nspins, orb_k_end, orb_k_start, orb_l_end, orb_l_start, &
+         primitive_counter, sphi_a_u1, sphi_a_u2, sphi_a_u3, sphi_b_u1, sphi_b_u2, sphi_b_u3
+      INTEGER :: sphi_c_u1, sphi_c_u2, sphi_c_u3, sphi_d_u1, sphi_d_u2, sphi_d_u3, virtual
+      INTEGER(int_8)                                     :: estimate_to_store_int, neris_tmp, &
+                                                            neris_total, nprim_ints
+      INTEGER, ALLOCATABLE, DIMENSION(:)                 :: kind_of, nimages
+      INTEGER, DIMENSION(:), POINTER                     :: la_max, la_min, lb_max, lb_min, lc_max, &
+                                                            lc_min, ld_max, ld_min, npgfa, npgfb, &
+                                                            npgfc, npgfd, nsgfa, nsgfb, nsgfc, &
+                                                            nsgfd
+      INTEGER, DIMENSION(:, :), POINTER                  :: nsgfl_a, nsgfl_b, nsgfl_c, nsgfl_d
+      LOGICAL                                            :: do_periodic
+      LOGICAL, DIMENSION(:, :), POINTER                  :: shm_atomic_pair_list
+      REAL(KIND=dp) :: cartesian_estimate, coeffs_kind_max0, eps_schwarz, ln_10, &
+         log10_eps_schwarz, log10_pmax, max_contraction_val, pmax_atom, pmax_entry, ra(3), rb(3), &
+         rc(3), rd(3)
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:)           :: ee_buffer1, ee_buffer2, &
+                                                            ee_primitives_tmp, ee_work, ee_work2, &
+                                                            primitive_integrals
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:, :)        :: L_block, L_full_matrix, max_contraction
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:, :, :)     :: BI1, MNRS
+      REAL(KIND=dp), DIMENSION(:), POINTER               :: p_work
+      REAL(KIND=dp), DIMENSION(:, :), POINTER            :: shm_pmax_block, zeta, zetb, zetc, zetd
+      REAL(KIND=dp), DIMENSION(:, :, :), POINTER         :: sphi_a_ext_set, sphi_b_ext_set, &
+                                                            sphi_c_ext_set, sphi_d_ext_set
+      REAL(KIND=dp), DIMENSION(:, :, :, :), POINTER      :: sphi_a_ext, sphi_b_ext, sphi_c_ext, &
+                                                            sphi_d_ext
+      TYPE(cell_type), POINTER                           :: cell
+      TYPE(cp_blacs_env_type), POINTER                   :: blacs_env
+      TYPE(cp_fm_struct_type), POINTER                   :: fm_struct_L
+      TYPE(cp_fm_type)                                   :: fm_matrix_L
+      TYPE(cp_libint_t)                                  :: private_lib
+      TYPE(hfx_basis_type), DIMENSION(:), POINTER        :: basis_parameter
+      TYPE(hfx_pgf_list), ALLOCATABLE, DIMENSION(:)      :: pgf_list_ij, pgf_list_kl
+      TYPE(hfx_pgf_product_list), ALLOCATABLE, &
+         DIMENSION(:)                                    :: pgf_product_list
+      TYPE(hfx_potential_type)                           :: mp2_potential_parameter
+      TYPE(hfx_screen_coeff_type), ALLOCATABLE, &
+         DIMENSION(:, :), TARGET                         :: radii_pgf_large, screen_coeffs_pgf_large
+      TYPE(hfx_screen_coeff_type), DIMENSION(:, :), &
+         POINTER                                         :: screen_coeffs_kind, tmp_R_1, tmp_R_2, &
+                                                            tmp_screen_pgf1, tmp_screen_pgf2
+      TYPE(hfx_screen_coeff_type), &
+         DIMENSION(:, :, :, :), POINTER                  :: screen_coeffs_set
+      TYPE(hfx_screen_coeff_type), &
+         DIMENSION(:, :, :, :, :, :), POINTER            :: radii_pgf, screen_coeffs_pgf
+      TYPE(hfx_type), POINTER                            :: actual_x_data
+      TYPE(pair_list_type_mp2)                           :: list_kl
+      TYPE(pair_set_list_type), ALLOCATABLE, &
+         DIMENSION(:)                                    :: set_list_kl
+      TYPE(particle_type), DIMENSION(:), POINTER         :: particle_set
+
+      CALL timeset(routineN, handle)
+
+      ln_10 = LOG(10.0_dp)
+
+      !! initialize some counters
+      neris_tmp = 0_int_8
+      neris_total = 0_int_8
+      nprim_ints = 0_int_8
+
+      CALL prepare_integral_calc(cell, qs_env, mp2_env, para_env, mp2_potential_parameter, actual_x_data, &
+                                 do_periodic, basis_parameter, max_set, particle_set, natom, kind_of, &
+                                 nsgf_max, primitive_integrals, ee_work, ee_work2, ee_buffer1, ee_buffer2, &
+                                 ee_primitives_tmp, nspins, max_contraction, max_pgf, pgf_list_ij, &
+                                 pgf_list_kl, pgf_product_list, nimages, eps_schwarz, log10_eps_schwarz, &
+                                 private_lib, p_work, screen_coeffs_set, screen_coeffs_kind, screen_coeffs_pgf, &
+                                 radii_pgf, RI_basis_parameter, RI_basis_info)
+
+      ALLOCATE (radii_pgf_large(SIZE(radii_pgf, 1), SIZE(radii_pgf, 2)))
+      ALLOCATE (screen_coeffs_pgf_large(SIZE(screen_coeffs_pgf, 1), SIZE(screen_coeffs_pgf, 2)))
+      DO iiB = 1, SIZE(radii_pgf, 1)
+         DO jjB = 1, SIZE(radii_pgf, 2)
+            radii_pgf_large(iiB, jjB)%x = 100_dp
+         END DO
+      END DO
+      DO iiB = 1, SIZE(screen_coeffs_pgf, 1)
+         DO jjB = 1, SIZE(screen_coeffs_pgf, 2)
+            screen_coeffs_pgf_large(iiB, jjB)%x = 5000_dp
+         END DO
+      END DO
+      tmp_R_1 => radii_pgf_large(:, :)
+      tmp_R_2 => radii_pgf_large(:, :)
+      tmp_screen_pgf1 => screen_coeffs_pgf_large(:, :)
+      tmp_screen_pgf2 => screen_coeffs_pgf_large(:, :)
+
+      ! start computing the L matrix
+      ALLOCATE (L_full_matrix(RI_dimen, RI_dimen))
+      L_full_matrix = 0.0_dp
+
+      counter_L_blocks = 0
+      DO iatom = 1, natom
+         jatom = iatom
+
+         ikind = kind_of(iatom)
+         jkind = kind_of(jatom)
+         ra = particle_set(iatom)%r(:)
+         rb = particle_set(jatom)%r(:)
+
+         la_max => RI_basis_parameter(ikind)%lmax
+         la_min => RI_basis_parameter(ikind)%lmin
+         npgfa => RI_basis_parameter(ikind)%npgf
+         nseta = RI_basis_parameter(ikind)%nset
+         zeta => RI_basis_parameter(ikind)%zet
+         nsgfa => RI_basis_parameter(ikind)%nsgf
+         sphi_a_ext => RI_basis_parameter(ikind)%sphi_ext(:, :, :, :)
+         nsgfl_a => RI_basis_parameter(ikind)%nsgfl
+         sphi_a_u1 = UBOUND(sphi_a_ext, 1)
+         sphi_a_u2 = UBOUND(sphi_a_ext, 2)
+         sphi_a_u3 = UBOUND(sphi_a_ext, 3)
+
+         lb_max => basis_S0(jkind)%lmax
+         lb_min => basis_S0(jkind)%lmin
+         npgfb => basis_S0(jkind)%npgf
+         nsetb = basis_S0(jkind)%nset
+         zetb => basis_S0(jkind)%zet
+         nsgfb => basis_S0(jkind)%nsgf
+         sphi_b_ext => basis_S0(jkind)%sphi_ext(:, :, :, :)
+         nsgfl_b => basis_S0(jkind)%nsgfl
+         sphi_b_u1 = UBOUND(sphi_b_ext, 1)
+         sphi_b_u2 = UBOUND(sphi_b_ext, 2)
+         sphi_b_u3 = UBOUND(sphi_b_ext, 3)
+
+         DO katom = iatom, natom
+            latom = katom
+
+            kkind = kind_of(katom)
+            lkind = kind_of(latom)
+            rc = particle_set(katom)%r(:)
+            rd = particle_set(latom)%r(:)
+
+            lc_max => RI_basis_parameter(kkind)%lmax
+            lc_min => RI_basis_parameter(kkind)%lmin
+            npgfc => RI_basis_parameter(kkind)%npgf
+            nsetc = RI_basis_parameter(kkind)%nset
+            zetc => RI_basis_parameter(kkind)%zet
+            nsgfc => RI_basis_parameter(kkind)%nsgf
+            sphi_c_ext => RI_basis_parameter(kkind)%sphi_ext(:, :, :, :)
+            nsgfl_c => RI_basis_parameter(kkind)%nsgfl
+            sphi_c_u1 = UBOUND(sphi_c_ext, 1)
+            sphi_c_u2 = UBOUND(sphi_c_ext, 2)
+            sphi_c_u3 = UBOUND(sphi_c_ext, 3)
+
+            ld_max => basis_S0(lkind)%lmax
+            ld_min => basis_S0(lkind)%lmin
+            npgfd => basis_S0(lkind)%npgf
+            nsetd = RI_basis_parameter(lkind)%nset
+            zetd => basis_S0(lkind)%zet
+            nsgfd => basis_S0(lkind)%nsgf
+            sphi_d_ext => basis_S0(lkind)%sphi_ext(:, :, :, :)
+            nsgfl_d => basis_S0(lkind)%nsgfl
+            sphi_d_u1 = UBOUND(sphi_d_ext, 1)
+            sphi_d_u2 = UBOUND(sphi_d_ext, 2)
+            sphi_d_u3 = UBOUND(sphi_d_ext, 3)
+
+            jset = 1
+            lset = 1
+            DO iset = 1, nseta
+
+               ncob = npgfb(jset)*ncoset(lb_max(jset))
+               sphi_a_ext_set => sphi_a_ext(:, :, :, iset)
+               sphi_b_ext_set => sphi_b_ext(:, :, :, jset)
+
+               L_B_i_start = RI_index_table(iatom, iset)
+               L_B_i_end = RI_index_table(iatom, iset) + nsgfa(iset) - 1
+
+               kset_start = 1
+               IF (iatom == katom) kset_start = iset
+               DO kset = kset_start, nsetc
+
+                  counter_L_blocks = counter_L_blocks + 1
+                  IF (MOD(counter_L_blocks, para_env%num_pe) /= para_env%mepos) CYCLE
+
+                  sphi_c_ext_set => sphi_c_ext(:, :, :, kset)
+                  sphi_d_ext_set => sphi_d_ext(:, :, :, lset)
+
+                  L_B_k_start = RI_index_table(katom, kset)
+                  L_B_k_end = RI_index_table(katom, kset) + nsgfc(kset) - 1
+
+                  pmax_entry = 0.0_dp
+                  log10_pmax = pmax_entry
+                  log10_eps_schwarz = log_zero
+
+                  max_contraction_val = 1.0000_dp
+
+                  ALLOCATE (L_block(nsgfa(iset), nsgfc(kset)))
+
+                  CALL coulomb4(private_lib, ra, rb, rc, rd, npgfa(iset), npgfb(jset), npgfc(kset), npgfd(lset), &
+                                la_min(iset), la_max(iset), lb_min(jset), lb_max(jset), &
+                                lc_min(kset), lc_max(kset), ld_min(lset), ld_max(lset), &
+                                nsgfa(iset), nsgfb(jset), nsgfc(kset), nsgfd(lset), &
+                                sphi_a_u1, sphi_a_u2, sphi_a_u3, &
+                                sphi_b_u1, sphi_b_u2, sphi_b_u3, &
+                                sphi_c_u1, sphi_c_u2, sphi_c_u3, &
+                                sphi_d_u1, sphi_d_u2, sphi_d_u3, &
+                                zeta(1:npgfa(iset), iset), zetb(1:npgfb(jset), jset), &
+                                zetc(1:npgfc(kset), kset), zetd(1:npgfd(lset), lset), &
+                                primitive_integrals, &
+                                mp2_potential_parameter, &
+                                actual_x_data%neighbor_cells, screen_coeffs_set(1, 1, 1, 1)%x, &
+                                screen_coeffs_set(1, 1, 1, 1)%x, eps_schwarz, &
+                                max_contraction_val, cartesian_estimate, cell, neris_tmp, &
+                                log10_pmax, log10_eps_schwarz, &
+                                tmp_R_1, tmp_R_2, tmp_screen_pgf1, tmp_screen_pgf2, &
+                                pgf_list_ij, pgf_list_kl, pgf_product_list, &
+                                nsgfl_a(:, iset), nsgfl_b(:, jset), &
+                                nsgfl_c(:, kset), nsgfl_d(:, lset), &
+                                sphi_a_ext_set, &
+                                sphi_b_ext_set, &
+                                sphi_c_ext_set, &
+                                sphi_d_ext_set, &
+                                ee_work, ee_work2, ee_buffer1, ee_buffer2, ee_primitives_tmp, &
+                                nimages, do_periodic, p_work)
+
+                  primitive_counter = 0
+                  DO llB = 1, nsgfd(lset)
+                     DO kkB = 1, nsgfc(kset)
+                        DO jjB = 1, nsgfb(jset)
+                           DO iiB = 1, nsgfa(iset)
+                              primitive_counter = primitive_counter + 1
+                              L_block(iiB, kkB) = primitive_integrals(primitive_counter)
+                           END DO
+                        END DO
+                     END DO
+                  END DO
+
+                  L_full_matrix(L_B_i_start:L_B_i_end, L_B_k_start:L_B_k_end) = L_block
+                  L_full_matrix(L_B_k_start:L_B_k_end, L_B_i_start:L_B_i_end) = TRANSPOSE(L_block)
+
+                  DEALLOCATE (L_block)
+
+               END DO ! kset
+            END DO ! iset
+
+         END DO !katom
+      END DO !iatom
+
+      ! now create a fm_matrix for the L matrix
+      CALL mp_sum(L_full_matrix, para_env%group)
+
+      ! create a sub blacs_env
+      NULLIFY (blacs_env)
+      CALL cp_blacs_env_create(blacs_env=blacs_env, para_env=para_env)
+
+      NULLIFY (fm_struct_L)
+      CALL cp_fm_struct_create(fm_struct_L, context=blacs_env, nrow_global=RI_dimen, &
+                               ncol_global=RI_dimen, para_env=para_env)
+      CALL cp_fm_create(fm_matrix_L, fm_struct_L, name="fm_matrix_L")
+      CALL cp_fm_struct_release(fm_struct_L)
+      CALL cp_blacs_env_release(blacs_env)
+
+      CALL cp_fm_set_submatrix(fm=fm_matrix_L, new_values=L_full_matrix, start_row=1, start_col=1, &
+                               n_rows=RI_dimen, n_cols=RI_dimen)
+
+      info_chol = 0
+      CALL cp_fm_cholesky_decompose(matrix=fm_matrix_L, n=RI_dimen, info_out=info_chol)
+      CPASSERT(info_chol == 0)
+
+      ! triangual invert
+      CALL cp_fm_triangular_invert(matrix_a=fm_matrix_L, uplo_tr='U')
+
+      ! replicate L matrix to each proc
+      L_full_matrix = 0.0_dp
+      CALL cp_fm_get_submatrix(fm_matrix_L, L_full_matrix, 1, 1, RI_dimen, RI_dimen, .FALSE.)
+      CALL cp_fm_release(fm_matrix_L)
+
+      ! clean lower part
+      DO iiB = 1, RI_dimen
+         L_full_matrix(iiB + 1:RI_dimen, iiB) = 0.0_dp
+      END DO
+
+      ALLOCATE (list_kl%elements(natom**2))
+
+      coeffs_kind_max0 = MAXVAL(screen_coeffs_kind(:, :)%x(2))
+      ALLOCATE (set_list_kl((max_set*natom)**2))
+
+      !! precalculate maximum density matrix elements in blocks
+      actual_x_data%pmax_block = 0.0_dp
+      shm_pmax_block => actual_x_data%pmax_block
+
+      shm_atomic_pair_list => actual_x_data%atomic_pair_list
+
+      iatom_start = 1
+      iatom_end = natom
+      jatom_start = 1
+      jatom_end = natom
+      katom_start = 1
+      katom_end = natom
+      latom_start = 1
+      latom_end = natom
+
+      CALL build_pair_list_mp2(natom, list_kl, set_list_kl, katom_start, katom_end, &
+                               latom_start, latom_end, &
+                               kind_of, basis_parameter, particle_set, &
+                               do_periodic, screen_coeffs_set, screen_coeffs_kind, &
+                               coeffs_kind_max0, log10_eps_schwarz, cell, 0.D+00, &
+                               shm_atomic_pair_list)
+
+      virtual = dimen - occupied
+
+      ALLOCATE (Lai(RI_dimen, virtual, occupied))
+      Lai = 0.0_dp
+
+      DO iatom = 1, natom
+         jatom = iatom
+
+         ikind = kind_of(iatom)
+         jkind = kind_of(jatom)
+         ra = particle_set(iatom)%r(:)
+         rb = particle_set(jatom)%r(:)
+
+         la_max => RI_basis_parameter(ikind)%lmax
+         la_min => RI_basis_parameter(ikind)%lmin
+         npgfa => RI_basis_parameter(ikind)%npgf
+         nseta = RI_basis_parameter(ikind)%nset
+         zeta => RI_basis_parameter(ikind)%zet
+         nsgfa => RI_basis_parameter(ikind)%nsgf
+         sphi_a_ext => RI_basis_parameter(ikind)%sphi_ext(:, :, :, :)
+         nsgfl_a => RI_basis_parameter(ikind)%nsgfl
+         sphi_a_u1 = UBOUND(sphi_a_ext, 1)
+         sphi_a_u2 = UBOUND(sphi_a_ext, 2)
+         sphi_a_u3 = UBOUND(sphi_a_ext, 3)
+
+         lb_max => basis_S0(jkind)%lmax
+         lb_min => basis_S0(jkind)%lmin
+         npgfb => basis_S0(jkind)%npgf
+         nsetb = basis_S0(jkind)%nset
+         zetb => basis_S0(jkind)%zet
+         nsgfb => basis_S0(jkind)%nsgf
+         sphi_b_ext => basis_S0(jkind)%sphi_ext(:, :, :, :)
+         nsgfl_b => basis_S0(jkind)%nsgfl
+         sphi_b_u1 = UBOUND(sphi_b_ext, 1)
+         sphi_b_u2 = UBOUND(sphi_b_ext, 2)
+         sphi_b_u3 = UBOUND(sphi_b_ext, 3)
+
+         jset = 1
+         DO iset = 1, nseta
+
+            counter_L_blocks = counter_L_blocks + 1
+            IF (MOD(counter_L_blocks, para_env%num_pe) /= para_env%mepos) CYCLE
+
+            ncob = npgfb(jset)*ncoset(lb_max(jset))
+            sphi_a_ext_set => sphi_a_ext(:, :, :, iset)
+            sphi_b_ext_set => sphi_b_ext(:, :, :, jset)
+
+            L_B_i_start = RI_index_table(iatom, iset)
+            L_B_i_end = RI_index_table(iatom, iset) + nsgfa(iset) - 1
+
+            ALLOCATE (BI1(dimen, dimen, nsgfa(iset)))
+            BI1 = 0.0_dp
+
+            DO i_list_kl = 1, list_kl%n_element
+
+               katom = list_kl%elements(i_list_kl)%pair(1)
+               latom = list_kl%elements(i_list_kl)%pair(2)
+
+               i_set_list_kl_start = list_kl%elements(i_list_kl)%set_bounds(1)
+               i_set_list_kl_stop = list_kl%elements(i_list_kl)%set_bounds(2)
+               kkind = list_kl%elements(i_list_kl)%kind_pair(1)
+               lkind = list_kl%elements(i_list_kl)%kind_pair(2)
+               rc = list_kl%elements(i_list_kl)%r1
+               rd = list_kl%elements(i_list_kl)%r2
+
+               pmax_atom = 0.0_dp
+
+               lc_max => basis_parameter(kkind)%lmax
+               lc_min => basis_parameter(kkind)%lmin
+               npgfc => basis_parameter(kkind)%npgf
+               zetc => basis_parameter(kkind)%zet
+               nsgfc => basis_parameter(kkind)%nsgf
+               sphi_c_ext => basis_parameter(kkind)%sphi_ext(:, :, :, :)
+               nsgfl_c => basis_parameter(kkind)%nsgfl
+               sphi_c_u1 = UBOUND(sphi_c_ext, 1)
+               sphi_c_u2 = UBOUND(sphi_c_ext, 2)
+               sphi_c_u3 = UBOUND(sphi_c_ext, 3)
+
+               ld_max => basis_parameter(lkind)%lmax
+               ld_min => basis_parameter(lkind)%lmin
+               npgfd => basis_parameter(lkind)%npgf
+               zetd => basis_parameter(lkind)%zet
+               nsgfd => basis_parameter(lkind)%nsgf
+               sphi_d_ext => basis_parameter(lkind)%sphi_ext(:, :, :, :)
+               nsgfl_d => basis_parameter(lkind)%nsgfl
+               sphi_d_u1 = UBOUND(sphi_d_ext, 1)
+               sphi_d_u2 = UBOUND(sphi_d_ext, 2)
+               sphi_d_u3 = UBOUND(sphi_d_ext, 3)
+
+               DO i_set_list_kl = i_set_list_kl_start, i_set_list_kl_stop
+                  kset = set_list_kl(i_set_list_kl)%pair(1)
+                  lset = set_list_kl(i_set_list_kl)%pair(2)
+
+                  IF (katom == latom .AND. lset < kset) CYCLE
+
+                  orb_k_start = mp2_biel%index_table(katom, kset)
+                  orb_k_end = orb_k_start + nsgfc(kset) - 1
+                  orb_l_start = mp2_biel%index_table(latom, lset)
+                  orb_l_end = orb_l_start + nsgfd(lset) - 1
+
+                  !! get max_vals if we screen on initial density
+                  pmax_entry = 0.0_dp
+
+                  sphi_c_ext_set => sphi_c_ext(:, :, :, kset)
+                  sphi_d_ext_set => sphi_d_ext(:, :, :, lset)
+
+                  log10_pmax = pmax_entry
+                  log10_eps_schwarz = log_zero
+
+                  IF (ALLOCATED(MNRS)) DEALLOCATE (MNRS)
+                  ALLOCATE (MNRS(nsgfd(lset), nsgfc(kset), nsgfa(iset)))
+
+                  MNRS = 0.0_dp
+
+                  max_contraction_val = max_contraction(kset, katom)*max_contraction(lset, latom)
+
+                  CALL coulomb4(private_lib, ra, rb, rc, rd, npgfa(iset), npgfb(jset), npgfc(kset), npgfd(lset), &
+                                la_min(iset), la_max(iset), lb_min(jset), lb_max(jset), &
+                                lc_min(kset), lc_max(kset), ld_min(lset), ld_max(lset), &
+                                nsgfa(iset), nsgfb(jset), nsgfc(kset), nsgfd(lset), &
+                                sphi_a_u1, sphi_a_u2, sphi_a_u3, &
+                                sphi_b_u1, sphi_b_u2, sphi_b_u3, &
+                                sphi_c_u1, sphi_c_u2, sphi_c_u3, &
+                                sphi_d_u1, sphi_d_u2, sphi_d_u3, &
+                                zeta(1:npgfa(iset), iset), zetb(1:npgfb(jset), jset), &
+                                zetc(1:npgfc(kset), kset), zetd(1:npgfd(lset), lset), &
+                                primitive_integrals, &
+                                mp2_potential_parameter, &
+                                actual_x_data%neighbor_cells, screen_coeffs_set(kset, kset, kkind, kkind)%x, &
+                                screen_coeffs_set(kset, kset, kkind, kkind)%x, eps_schwarz, &
+                                max_contraction_val, cartesian_estimate, cell, neris_tmp, &
+                                log10_pmax, log10_eps_schwarz, &
+                                tmp_R_1, tmp_R_2, tmp_screen_pgf1, tmp_screen_pgf2, &
+                                pgf_list_ij, pgf_list_kl, pgf_product_list, &
+                                nsgfl_a(:, iset), nsgfl_b(:, jset), &
+                                nsgfl_c(:, kset), nsgfl_d(:, lset), &
+                                sphi_a_ext_set, &
+                                sphi_b_ext_set, &
+                                sphi_c_ext_set, &
+                                sphi_d_ext_set, &
+                                ee_work, ee_work2, ee_buffer1, ee_buffer2, ee_primitives_tmp, &
+                                nimages, do_periodic, p_work)
+
+                  nints = nsgfa(iset)*nsgfb(jset)*nsgfc(kset)*nsgfd(lset)
+                  neris_total = neris_total + nints
+                  nprim_ints = nprim_ints + neris_tmp
+                  IF (cartesian_estimate == 0.0_dp) cartesian_estimate = TINY(cartesian_estimate)
+                  estimate_to_store_int = EXPONENT(cartesian_estimate)
+                  estimate_to_store_int = MAX(estimate_to_store_int, -15_int_8)
+                  cartesian_estimate = SET_EXPONENT(1.0_dp, estimate_to_store_int + 1)
+
+                  primitive_counter = 0
+                  DO llB = 1, nsgfd(lset)
+                     DO kkB = 1, nsgfc(kset)
+                        DO jjB = 1, nsgfb(jset)
+                           DO iiB = 1, nsgfa(iset)
+                              primitive_counter = primitive_counter + 1
+                              MNRS(llB, kkB, iiB) = primitive_integrals(primitive_counter)
+                           END DO
+                        END DO
+                     END DO
+                  END DO
+
+                  DO iiB = 1, nsgfa(iset)
+                     BI1(orb_l_start:orb_l_end, orb_k_start:orb_k_end, iiB) = MNRS(:, :, iiB)
+                     BI1(orb_k_start:orb_k_end, orb_l_start:orb_l_end, iiB) = TRANSPOSE(MNRS(:, :, iiB))
+                  END DO
+
+               END DO ! i_set_list_kl
+            END DO ! i_list_kl
+
+            DO iiB = 1, nsgfa(iset)
+               BI1(1:virtual, 1:occupied, iiB) = MATMUL(TRANSPOSE(C(1:dimen, occupied + 1:dimen)), &
+                                                        MATMUL(BI1(1:dimen, 1:dimen, iiB), C(1:dimen, 1:occupied)))
+               Lai(L_B_i_start + iiB - 1, 1:virtual, 1:occupied) = BI1(1:virtual, 1:occupied, iiB)
+            END DO
+
+            DEALLOCATE (BI1)
+
+         END DO
+      END DO
+
+      CALL mp_sum(Lai, para_env%group)
+
+      DO iiB = 1, occupied
+         IF (MOD(iiB, para_env%num_pe) == para_env%mepos) THEN
+            Lai(1:RI_dimen, 1:virtual, iiB) = MATMUL(TRANSPOSE(L_full_matrix), Lai(1:RI_dimen, 1:virtual, iiB))
+         ELSE
+            Lai(:, :, iiB) = 0.0_dp
+         END IF
+      END DO
+
+      CALL mp_sum(Lai, para_env%group)
+
+      DEALLOCATE (set_list_kl)
+
+      DO i = 1, max_pgf**2
+         DEALLOCATE (pgf_list_ij(i)%image_list)
+         DEALLOCATE (pgf_list_kl(i)%image_list)
+      END DO
+
+      DEALLOCATE (pgf_list_ij)
+      DEALLOCATE (pgf_list_kl)
+      DEALLOCATE (pgf_product_list)
+
+      DEALLOCATE (max_contraction, kind_of)
+
+      DEALLOCATE (ee_work, ee_work2, ee_buffer1, ee_buffer2, ee_primitives_tmp)
+
+      DEALLOCATE (nimages)
+
+      IF (mp2_env%potential_parameter%potential_type == do_potential_TShPSC) THEN
+         init_TShPSC_lmax = -1
+         CALL free_C0()
+      END IF
+
+      CALL timestop(handle)
+
+   END SUBROUTINE calc_lai_libint
+
+! **************************************************************************************************
+!> \brief ...
+!> \param cell ...
+!> \param qs_env ...
+!> \param mp2_env ...
+!> \param para_env ...
+!> \param mp2_potential_parameter ...
+!> \param actual_x_data ...
+!> \param do_periodic ...
+!> \param basis_parameter ...
+!> \param max_set ...
+!> \param particle_set ...
+!> \param natom ...
+!> \param kind_of ...
+!> \param nsgf_max ...
+!> \param primitive_integrals ...
+!> \param ee_work ...
+!> \param ee_work2 ...
+!> \param ee_buffer1 ...
+!> \param ee_buffer2 ...
+!> \param ee_primitives_tmp ...
+!> \param nspins ...
+!> \param max_contraction ...
+!> \param max_pgf ...
+!> \param pgf_list_ij ...
+!> \param pgf_list_kl ...
+!> \param pgf_product_list ...
+!> \param nimages ...
+!> \param eps_schwarz ...
+!> \param log10_eps_schwarz ...
+!> \param private_lib ...
+!> \param p_work ...
+!> \param screen_coeffs_set ...
+!> \param screen_coeffs_kind ...
+!> \param screen_coeffs_pgf ...
+!> \param radii_pgf ...
+!> \param RI_basis_parameter ...
+!> \param RI_basis_info ...
+! **************************************************************************************************
+   SUBROUTINE prepare_integral_calc(cell, qs_env, mp2_env, para_env, mp2_potential_parameter, actual_x_data, &
+                                    do_periodic, basis_parameter, max_set, particle_set, natom, kind_of, &
+                                    nsgf_max, primitive_integrals, ee_work, ee_work2, ee_buffer1, ee_buffer2, &
+                                    ee_primitives_tmp, nspins, max_contraction, max_pgf, pgf_list_ij, &
+                                    pgf_list_kl, pgf_product_list, nimages, eps_schwarz, log10_eps_schwarz, &
+                                    private_lib, p_work, screen_coeffs_set, screen_coeffs_kind, screen_coeffs_pgf, &
+                                    radii_pgf, RI_basis_parameter, RI_basis_info)
+
+      TYPE(cell_type), POINTER                           :: cell
+      TYPE(qs_environment_type), INTENT(IN), POINTER     :: qs_env
+      TYPE(mp2_type), INTENT(INOUT)                      :: mp2_env
+      TYPE(cp_para_env_type), INTENT(IN)                 :: para_env
+      TYPE(hfx_potential_type), INTENT(OUT)              :: mp2_potential_parameter
+      TYPE(hfx_type), POINTER                            :: actual_x_data
+      LOGICAL, INTENT(OUT)                               :: do_periodic
+      TYPE(hfx_basis_type), DIMENSION(:), POINTER        :: basis_parameter
+      INTEGER, INTENT(OUT)                               :: max_set
+      TYPE(particle_type), DIMENSION(:), POINTER         :: particle_set
+      INTEGER, INTENT(OUT)                               :: natom
+      INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)    :: kind_of
+      INTEGER, INTENT(OUT)                               :: nsgf_max
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:), &
+         INTENT(OUT)                                     :: primitive_integrals, ee_work, ee_work2, &
+                                                            ee_buffer1, ee_buffer2, &
+                                                            ee_primitives_tmp
+      INTEGER, INTENT(OUT)                               :: nspins
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:, :), &
+         INTENT(OUT)                                     :: max_contraction
+      INTEGER, INTENT(OUT)                               :: max_pgf
+      TYPE(hfx_pgf_list), ALLOCATABLE, DIMENSION(:), &
+         INTENT(OUT)                                     :: pgf_list_ij, pgf_list_kl
+      TYPE(hfx_pgf_product_list), ALLOCATABLE, &
+         DIMENSION(:), INTENT(OUT)                       :: pgf_product_list
+      INTEGER, ALLOCATABLE, DIMENSION(:), INTENT(OUT)    :: nimages
+      REAL(KIND=dp), INTENT(OUT)                         :: eps_schwarz, log10_eps_schwarz
+      TYPE(cp_libint_t), INTENT(OUT)                     :: private_lib
+      REAL(KIND=dp), DIMENSION(:), POINTER               :: p_work
+      TYPE(hfx_screen_coeff_type), &
+         DIMENSION(:, :, :, :), POINTER                  :: screen_coeffs_set
+      TYPE(hfx_screen_coeff_type), DIMENSION(:, :), &
+         POINTER                                         :: screen_coeffs_kind
+      TYPE(hfx_screen_coeff_type), &
+         DIMENSION(:, :, :, :, :, :), POINTER            :: screen_coeffs_pgf, radii_pgf
+      TYPE(hfx_basis_type), DIMENSION(:), OPTIONAL, &
+         POINTER                                         :: RI_basis_parameter
+      TYPE(hfx_basis_info_type), INTENT(IN), OPTIONAL    :: RI_basis_info
+
+      CHARACTER(LEN=*), PARAMETER :: routineN = 'prepare_integral_calc'
+
+      INTEGER                                            :: handle, i_thread, ii, ikind, irep, &
+                                                            l_max, n_threads, ncos_max, nkind, &
+                                                            nneighbors
+      TYPE(atomic_kind_type), DIMENSION(:), POINTER      :: atomic_kind_set
+      TYPE(dft_control_type), POINTER                    :: dft_control
+      TYPE(hfx_basis_info_type), POINTER                 :: basis_info
+      TYPE(hfx_type), POINTER                            :: shm_master_x_data
+
+      CALL timeset(routineN, handle)
+
+      NULLIFY (dft_control)
+
+      irep = 1
+
+      CALL get_qs_env(qs_env, &
+                      atomic_kind_set=atomic_kind_set, &
+                      cell=cell, &
+                      dft_control=dft_control)
+
+      !! Calculate l_max used in fgamma , because init_md_ftable is definitely not thread safe
+      nkind = SIZE(atomic_kind_set, 1)
+      l_max = 0
+      DO ikind = 1, nkind
+         l_max = MAX(l_max, MAXVAL(qs_env%x_data(1, 1)%basis_parameter(ikind)%lmax))
+      END DO
+      IF (PRESENT(RI_basis_parameter)) THEN
+         DO ikind = 1, nkind
+            l_max = MAX(l_max, MAXVAL(RI_basis_parameter(ikind)%lmax))
+         END DO
+      END IF
+      l_max = 4*l_max
+      CALL init_md_ftable(l_max)
+
+      CALL get_potential_parameters(mp2_env, l_max, para_env, mp2_potential_parameter)
+
+      n_threads = 1
+
+      i_thread = 0
+
+      actual_x_data => qs_env%x_data(irep, i_thread + 1)
+
+      shm_master_x_data => qs_env%x_data(irep, 1)
+
+      do_periodic = actual_x_data%periodic_parameter%do_periodic
+
+      IF (do_periodic) THEN
+         ! ** Rebuild neighbor lists in case the cell has changed (i.e. NPT MD)
+         actual_x_data%periodic_parameter%number_of_shells = actual_x_data%periodic_parameter%mode
+         CALL hfx_create_neighbor_cells(actual_x_data, actual_x_data%periodic_parameter%number_of_shells_from_input, &
+                                        cell, i_thread)
+      END IF
+
+      basis_parameter => actual_x_data%basis_parameter
+      basis_info => actual_x_data%basis_info
+
+      max_set = basis_info%max_set
+      IF (PRESENT(RI_basis_info)) max_set = MAX(max_set, RI_basis_info%max_set)
+
+      CALL get_qs_env(qs_env=qs_env, &
+                      atomic_kind_set=atomic_kind_set, &
+                      particle_set=particle_set)
+
+      natom = SIZE(particle_set, 1)
+
+      ALLOCATE (kind_of(natom))
+
+      CALL get_atomic_kind_set(atomic_kind_set=atomic_kind_set, &
+                               kind_of=kind_of)
+
+      !! precompute maximum nco and allocate scratch
+      ncos_max = 0
+      nsgf_max = 0
+      CALL get_ncos_and_ncsgf(natom, kind_of, basis_parameter, ncos_max, nsgf_max)
+      IF (PRESENT(RI_basis_parameter)) THEN
+         CALL get_ncos_and_ncsgf(natom, kind_of, RI_basis_parameter, ncos_max, nsgf_max)
+      END IF
+
+      !! Allocate the arrays for the integrals.
+      ALLOCATE (primitive_integrals(nsgf_max**4))
+      primitive_integrals = 0.0_dp
+
+      ALLOCATE (ee_work(ncos_max**4))
+      ALLOCATE (ee_work2(ncos_max**4))
+      ALLOCATE (ee_buffer1(ncos_max**4))
+      ALLOCATE (ee_buffer2(ncos_max**4))
+      ALLOCATE (ee_primitives_tmp(nsgf_max**4))
+
+      nspins = dft_control%nspins
+
+      CALL get_max_contraction(max_contraction, max_set, natom, max_pgf, kind_of, basis_parameter)
+
+      ! ** Allocate buffers for pgf_lists
+      nneighbors = SIZE(actual_x_data%neighbor_cells)
+      ALLOCATE (pgf_list_ij(max_pgf**2))
+      ALLOCATE (pgf_list_kl(max_pgf**2))
+      ALLOCATE (pgf_product_list(nneighbors**3))
+      ALLOCATE (nimages(max_pgf**2))
+
+      DO ii = 1, max_pgf**2
+         ALLOCATE (pgf_list_ij(ii)%image_list(nneighbors))
+         ALLOCATE (pgf_list_kl(ii)%image_list(nneighbors))
+      END DO
+
+      !!! Skipped part
+
+      !! Get screening parameter
+      eps_schwarz = actual_x_data%screening_parameter%eps_schwarz
+      IF (eps_schwarz <= 0.0_dp) THEN
+         log10_eps_schwarz = log_zero
+      ELSE
+         log10_eps_schwarz = LOG10(eps_schwarz)
+      END IF
+
+      !! The number of integrals that fit into the given MAX_MEMORY
+
+      private_lib = actual_x_data%lib
+
+      !!!!!!!! Missing part on the density matrix
+
+      !! Initialize schwarz screening matrices for near field estimates and boxing screening matrices
+      !! for far field estimates. The update is only performed if the geomtry of the system changed.
+      !! If the system is periodic, then the corresponding routines are called and some variables
+      !! are initialized
+
+      IF (.NOT. shm_master_x_data%screen_funct_is_initialized) THEN
+         CALL calc_pair_dist_radii(qs_env, basis_parameter, &
+                                   shm_master_x_data%pair_dist_radii_pgf, max_set, max_pgf, eps_schwarz, &
+                                   n_threads, i_thread)
+         CALL calc_screening_functions(qs_env, basis_parameter, private_lib, shm_master_x_data%potential_parameter, &
+                                       shm_master_x_data%screen_funct_coeffs_set, &
+                                       shm_master_x_data%screen_funct_coeffs_kind, &
+                                       shm_master_x_data%screen_funct_coeffs_pgf, &
+                                       shm_master_x_data%pair_dist_radii_pgf, &
+                                       max_set, max_pgf, n_threads, i_thread, p_work)
+
+         shm_master_x_data%screen_funct_is_initialized = .TRUE.
+      END IF
+
+      screen_coeffs_set => shm_master_x_data%screen_funct_coeffs_set
+      screen_coeffs_kind => shm_master_x_data%screen_funct_coeffs_kind
+      screen_coeffs_pgf => shm_master_x_data%screen_funct_coeffs_pgf
+      radii_pgf => shm_master_x_data%pair_dist_radii_pgf
+
+      CALL timestop(handle)
+
+   END SUBROUTINE prepare_integral_calc
+
+! **************************************************************************************************
+!> \brief ...
+!> \param mp2_env ...
+!> \param l_max ...
+!> \param para_env ...
+!> \param mp2_potential_parameter ...
+! **************************************************************************************************
+   SUBROUTINE get_potential_parameters(mp2_env, l_max, para_env, mp2_potential_parameter)
+
+      TYPE(mp2_type)                                     :: mp2_env
+      INTEGER, INTENT(IN)                                :: l_max
+      TYPE(cp_para_env_type), INTENT(IN)                 :: para_env
+      TYPE(hfx_potential_type), INTENT(OUT)              :: mp2_potential_parameter
+
+      INTEGER                                            :: unit_id
+
+      IF (mp2_env%potential_parameter%potential_type == do_potential_TShPSC) THEN
+         IF (l_max > init_TShPSC_lmax) THEN
+            IF (para_env%ionode) THEN
+               CALL open_file(unit_number=unit_id, file_name=mp2_env%potential_parameter%filename)
+            END IF
+            CALL init(l_max, unit_id, para_env%mepos, para_env%group)
+            IF (para_env%ionode) THEN
+               CALL close_file(unit_id)
+            END IF
+            init_TShPSC_lmax = l_max
+         END IF
+         mp2_potential_parameter%cutoff_radius = mp2_env%potential_parameter%cutoff_radius/2.0_dp
+      ELSE IF (mp2_env%potential_parameter%potential_type == do_potential_long) THEN
+         mp2_potential_parameter%omega = mp2_env%potential_parameter%omega
+      END IF
+
+      mp2_potential_parameter%potential_type = mp2_env%potential_parameter%potential_type
+
+   END SUBROUTINE get_potential_parameters
+
+! **************************************************************************************************
+!> \brief ...
+!> \param natom ...
+!> \param kind_of ...
+!> \param basis_parameter ...
+!> \param ncos_max ...
+!> \param nsgf_max ...
+! **************************************************************************************************
+   SUBROUTINE get_ncos_and_ncsgf(natom, kind_of, basis_parameter, ncos_max, nsgf_max)
+
+      INTEGER, INTENT(IN)                                :: natom
+      INTEGER, DIMENSION(:), INTENT(IN)                  :: kind_of
+      TYPE(hfx_basis_type), DIMENSION(:), POINTER        :: basis_parameter
+      INTEGER, INTENT(INOUT)                             :: ncos_max, nsgf_max
+
+      INTEGER                                            :: iatom, ikind, iset, nseta
+      INTEGER, DIMENSION(:), POINTER                     :: la_max, npgfa, nsgfa
+
+      DO iatom = 1, natom
+         ikind = kind_of(iatom)
+         nseta = basis_parameter(ikind)%nset
+         npgfa => basis_parameter(ikind)%npgf
+         la_max => basis_parameter(ikind)%lmax
+         nsgfa => basis_parameter(ikind)%nsgf
+         DO iset = 1, nseta
+            ncos_max = MAX(ncos_max, ncoset(la_max(iset)))
+            nsgf_max = MAX(nsgf_max, nsgfa(iset))
+         END DO
+      END DO
+
+   END SUBROUTINE get_ncos_and_ncsgf
+
+! **************************************************************************************************
+!> \brief ...
+!> \param max_contraction ...
+!> \param max_set ...
+!> \param natom ...
+!> \param max_pgf ...
+!> \param kind_of ...
+!> \param basis_parameter ...
+! **************************************************************************************************
+   SUBROUTINE get_max_contraction(max_contraction, max_set, natom, max_pgf, kind_of, basis_parameter)
+
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:, :), &
+         INTENT(OUT)                                     :: max_contraction
+      INTEGER, INTENT(IN)                                :: max_set, natom
+      INTEGER, INTENT(OUT)                               :: max_pgf
+      INTEGER, DIMENSION(:), INTENT(IN)                  :: kind_of
+      TYPE(hfx_basis_type), DIMENSION(:), POINTER        :: basis_parameter
+
+      INTEGER                                            :: i, jatom, jkind, jset, ncob, nsetb, sgfb
+      INTEGER, DIMENSION(:), POINTER                     :: lb_max, npgfb, nsgfb
+      INTEGER, DIMENSION(:, :), POINTER                  :: first_sgfb
+      REAL(KIND=dp), DIMENSION(:, :), POINTER            :: sphi_b
+
+      ALLOCATE (max_contraction(max_set, natom))
+
+      max_contraction = 0.0_dp
+      max_pgf = 0
+      DO jatom = 1, natom
+         jkind = kind_of(jatom)
+         lb_max => basis_parameter(jkind)%lmax
+         nsetb = basis_parameter(jkind)%nset
+         npgfb => basis_parameter(jkind)%npgf
+         first_sgfb => basis_parameter(jkind)%first_sgf
+         sphi_b => basis_parameter(jkind)%sphi
+         nsgfb => basis_parameter(jkind)%nsgf
+         DO jset = 1, nsetb
+            ! takes the primitive to contracted transformation into account
+            ncob = npgfb(jset)*ncoset(lb_max(jset))
+            sgfb = first_sgfb(1, jset)
+            ! if the primitives are assumed to be all of max_val2, max_val2*p2s_b becomes
+            ! the maximum value after multiplication with sphi_b
+            max_contraction(jset, jatom) = MAXVAL((/(SUM(ABS(sphi_b(1:ncob, i))), i=sgfb, sgfb + nsgfb(jset) - 1)/))
+            max_pgf = MAX(max_pgf, npgfb(jset))
+         END DO
+      END DO
+
+   END SUBROUTINE get_max_contraction
+
+END MODULE mp2_ri_libint

@@ -1,0 +1,167 @@
+
+
+ &GLOBAL
+   PRINT_LEVEL  low
+   PROJECT_NAME trying_md
+   RUN_TYPE  MD 
+ &END GLOBAL
+ &MOTION
+   &MD 
+     ENSEMBLE  NVE
+     STEPS  100
+     TIMESTEP     1
+     TEMPERATURE     300
+   &PRINT
+     &CENTER_OF_MASS
+	&EACH
+		MD 1
+	&END EACH
+     &END CENTER_OF_MASS
+   &END PRINT
+   &END MD
+   &PRINT
+     &TRAJECTORY  SILENT
+       UNIT angstrom
+       FORMAT  XMOL
+       &EACH
+         MD  1
+       &END EACH
+     &END TRAJECTORY
+     &VELOCITIES ON
+     &END VELOCITIES
+     &FORCES ON
+     &END FORCES
+     &RESTART_HISTORY
+       &EACH
+         MD 10000
+       &END EACH
+     &END RESTART_HISTORY
+   &END PRINT
+ &END MOTION
+
+&multiple_force_evals
+	force_eval_order 1 2 3
+	multiple_subsys
+&end multiple_force_evals
+
+&FORCE_EVAL
+	method mixed
+	&MIXED
+	ngroups 1
+	mixing_type genmix
+	&Generic
+	mixing_function a+b
+        variables a b
+	&end generic
+	&END MIXED
+  &SUBSYS
+    &Cell
+	ABC 1.5662700000000001E+01 1.5662700000000001E+01 1.5662700000000001E+01 
+    &END CELL
+    &TOPOLOGY
+            COORD_FILE_NAME pos.xyz
+            COORD_FILE_FORMAT xyz
+    &END TOPOLOGY 
+    &VELOCITY
+	@INCLUDE velocity.init
+	PINT_UNIT bohr*au_t^-1
+    &END VELOCITY
+  &END SUBSYS
+&END FORCE_EVAL
+
+&FORCE_EVAL
+
+   METHOD  NNP
+   &NNP
+     NNP_INPUT_FILE_NAME ./nnp0/input.nn 
+     SCALE_FILE_NAME ./nnp0/scaling.data
+     &MODEL
+       WEIGHTS ./nnp0/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS ./nnp1/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp2/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp3/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp4/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp5/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp6/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp7/weights 
+     &END MODEL
+     &PRINT
+       &ENERGIES  SILENT
+         &EACH
+           MD   1
+         &END EACH
+       &END ENERGIES
+     &END PRINT
+   &END NNP
+  &SUBSYS
+    &Cell
+	ABC 1.5662700000000001E+01 1.5662700000000001E+01 1.5662700000000001E+01 
+    &END CELL
+    &TOPOLOGY
+            COORD_FILE_NAME pos.xyz
+            COORD_FILE_FORMAT xyz
+    &END TOPOLOGY 
+    &VELOCITY
+	@INCLUDE velocity.init
+	PINT_UNIT bohr*au_t^-1
+    &END VELOCITY
+  &END SUBSYS
+&END FORCE_EVAL
+
+&FORCE_EVAL
+!write nnp force eval here
+   METHOD  APT
+   &APT
+	APT_TORCH_FILE nameoftorchfile.torch
+	E_FIELD_VECTOR 0 0 5e-4
+	&PRINT
+
+	&TENSORS
+	&EACH
+		MD 1
+	&END EACH
+	&END TENSORS
+
+	&FORCES
+	&EACH
+		MD 1
+	&END EACH
+	&END FORCES
+
+	&STDS
+	&EACH
+		MD 1
+	&END EACH
+	&END STDS
+
+	&END PRINT
+   &END APT
+  &SUBSYS
+    &Cell
+	ABC 1.5662700000000001E+01 1.5662700000000001E+01 1.5662700000000001E+01 
+    &END CELL
+    &TOPOLOGY
+            COORD_FILE_NAME pos.xyz
+            COORD_FILE_FORMAT xyz
+    &END TOPOLOGY 
+    &VELOCITY
+	@INCLUDE velocity.init
+	PINT_UNIT bohr*au_t^-1
+    &END VELOCITY
+  &END SUBSYS
+&END FORCE_EVAL
+
