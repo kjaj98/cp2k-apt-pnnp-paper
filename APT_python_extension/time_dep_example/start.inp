@@ -1,0 +1,182 @@
+
+
+ &GLOBAL
+   PRINT_LEVEL  low
+   PROJECT_NAME pulse-md
+   RUN_TYPE  MD 
+ &END GLOBAL
+ &MOTION
+   &MD 
+     ENSEMBLE  NVE
+     STEPS     40000
+     TIMESTEP  0.5
+   &END MD
+
+   &PRINT
+     &TRAJECTORY  SILENT
+       UNIT angstrom
+       FORMAT  XMOL
+       &EACH
+         MD  1
+       &END EACH
+     &END TRAJECTORY
+     &VELOCITIES ON
+       UNIT angstrom*fs^-1
+     &END VELOCITIES
+     &FORCES ON
+     &END FORCES
+     &RESTART_HISTORY
+       &EACH
+         MD 10000
+       &END EACH
+     &END RESTART_HISTORY
+   &END PRINT
+ &END MOTION
+
+&multiple_force_evals
+	force_eval_order 1 2 3
+	multiple_subsys
+&end multiple_force_evals
+
+&FORCE_EVAL
+	method mixed
+	&MIXED
+	ngroups 1
+	mixing_type genmix
+	&Generic
+	mixing_function a+b
+        variables a b
+	&end generic
+	&END MIXED
+  &SUBSYS
+    &Cell
+	ABC 1.5662700000000001E+01 1.5662700000000001E+01 1.5662700000000001E+01 
+    &END CELL
+    &TOPOLOGY
+        COORD_FILE_NAME restart-positions.xyz
+        COORD_FILE_FORMAT xyz
+    &END TOPOLOGY 
+    &VELOCITY
+      @INCLUDE restart-velocities.xyz
+!	  PINT_UNIT bohr*au_t^-1
+    &END VELOCITY
+  &END SUBSYS
+&END FORCE_EVAL
+
+&FORCE_EVAL
+
+   METHOD  NNP
+   &NNP
+     NNP_INPUT_FILE_NAME ./nnp/nnp0/input.nn 
+     SCALE_FILE_NAME ./nnp/nnp0/scaling.data
+     &MODEL
+       WEIGHTS ./nnp/nnp0/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS ./nnp/nnp1/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp/nnp2/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp/nnp3/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp/nnp4/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp/nnp5/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp/nnp6/weights 
+     &END MODEL
+     &MODEL
+       WEIGHTS  ./nnp/nnp7/weights 
+     &END MODEL
+     &PRINT
+       &ENERGIES  SILENT
+         &EACH
+           MD   1
+         &END EACH
+       &END ENERGIES
+     &END PRINT
+   &END NNP
+  &SUBSYS
+    &Cell
+	ABC 1.5662700000000001E+01 1.5662700000000001E+01 1.5662700000000001E+01 
+    &END CELL
+    &TOPOLOGY
+      COORD_FILE_NAME restart-positions.xyz
+      COORD_FILE_FORMAT xyz
+    &END TOPOLOGY 
+    &VELOCITY
+      @INCLUDE restart-velocities.xyz
+!	  PINT_UNIT bohr*au_t^-1
+    &END VELOCITY
+  &END SUBSYS
+&END FORCE_EVAL
+
+&FORCE_EVAL
+!write nnp force eval here
+   METHOD  APT
+   &APT
+       TORCH_FILE c-aptnn.torch
+       APT_SERVER apt.server.socket
+
+	   &ELECTRIC_FIELD_VECTOR
+         ! This determines the MD timestep to be 0.5
+         MD_TIMESTEP 0.5
+
+		 &X_component
+		    function E*cos(w*t+phi)*exp(-(t-t0)**2/(2*s**2))
+		    parameters E w s phi t0
+            ! E: is field amplitude, should be 0.27 MV/cm (now in atomic unit of E-field)
+            ! w: is angular frequency, nu=12.3 THz (w=2pi*nu: 77.2812 THz, 77.2812e-3 PHz)
+            ! s: is width of gaussian envelope; FWHM: 3ps -> 1273.9827 fs
+            ! phi: Phase which needs to be averaged over from 0 to 2pi
+            ! t0: Offset to have the full pulse: 5000 fs
+		    values 5.251e-4 77.2812e-3 1273.9827 0 5000
+		    variables t
+		 &End X_component
+
+		&Y_component
+		    function 0
+		    parameters 0
+		    values 0
+		    variables t
+		&End Y_component
+
+		&Z_component
+		    function 0
+		    parameters 0
+		    values 0
+		    variables t
+		&End Z_component
+
+	    &END ELECTRIC_FIELD_VECTOR
+
+
+	&PRINT
+	&TENSORS
+	&EACH
+		MD 1
+	&END EACH
+	&END TENSORS
+
+	&END PRINT
+   &END APT
+  &SUBSYS
+    &Cell
+	ABC 1.5662700000000001E+01 1.5662700000000001E+01 1.5662700000000001E+01 
+    &END CELL
+    &TOPOLOGY
+      COORD_FILE_NAME restart-positions.xyz
+      COORD_FILE_FORMAT xyz
+    &END TOPOLOGY 
+    &VELOCITY
+      @INCLUDE restart-velocities.xyz
+!	  PINT_UNIT bohr*au_t^-1
+    &END VELOCITY
+  &END SUBSYS
+&END FORCE_EVAL
+

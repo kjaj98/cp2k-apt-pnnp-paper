@@ -37,7 +37,7 @@ MODULE apt_force
    USE periodic_table,                  ONLY: get_ptable_info
    USE physcon,                         ONLY: angstrom
    USE virial_types,                    ONLY: virial_type
-
+   USE fparser,                         ONLY: evalf, initf, parsef, finalizef
    USE apt_utils,                       ONLY: driver_connect, driver_subroutine
 #include "./base/base_uses.f90"
 
@@ -111,7 +111,30 @@ CONTAINS
          ! get the coords
          particle_set => subsys%particles%els
          num_atoms = SIZE(particle_set)
-         ! send the coords to the server
+
+         ! init the electric field array in memory
+         if (.not. allocated(apt_env%electric_field)) then
+            allocate(apt_env%electric_field(3))
+         end if
+
+         ! Calculate the electric field components at the current timestep
+         call initf(3)
+         call parsef(1, TRIM(apt_env%xefieldfunction), apt_env%xefieldparameters)
+         apt_env%electric_field(1) = evalf(1, apt_env%xefieldvalues)
+         write(unit_nr,*) 'x component of electric field is ', apt_env%electric_field(1)
+         flush(unit_nr)
+
+         call parsef(2, TRIM(apt_env%yefieldfunction), apt_env%yefieldparameters)
+         apt_env%electric_field(2) = evalf(2, apt_env%yefieldvalues)
+         write(unit_nr,*) 'y component of electric field is ', apt_env%electric_field(2)
+         flush(unit_nr)
+
+         call parsef(3, TRIM(apt_env%zefieldfunction), apt_env%zefieldparameters)
+         apt_env%electric_field(3) = evalf(3, apt_env%zefieldvalues)
+         write(unit_nr,*) 'z component of electric field is ', apt_env%electric_field(3)
+         flush(unit_nr)
+
+         call finalizef()
 
          call mp_sync(logger%para_env%group)
          IF (logger%para_env%ionode) THEN
@@ -128,7 +151,7 @@ CONTAINS
                allocate(apt_env%apt_forces(apt_env%num_atoms,3))
             end if
             WRITE(unit_nr,*) ''
-            WRITE(unit_nr,*) 'E FIELD =', apt_env%electric_field
+            WRITE(unit_nr,*) 'E FIELD =', apt_env%electric_field, 'at time =', apt_env%zefieldvalues(1)
             WRITE(unit_nr,*) ''
             ! Compute forces
             FLUSH(unit_nr)
@@ -165,7 +188,13 @@ CONTAINS
          CALL apt_print(apt_env, print_section)
          CALL timestop(handle)
       end if
-
+      ! update the time for next step
+      apt_env%zefieldvalues(1)=apt_env%zefieldvalues(1)+apt_env%md_timestep
+      apt_env%xefieldvalues(1)=apt_env%xefieldvalues(1)+apt_env%md_timestep
+      apt_env%yefieldvalues(1)=apt_env%yefieldvalues(1)+apt_env%md_timestep
+      if (allocated(apt_env%electric_field)) then
+         deallocate(apt_env%electric_field)
+      end if
 
    END SUBROUTINE apt_calc_energy_force
 

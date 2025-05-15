@@ -242,14 +242,6 @@ CONTAINS
          CALL nnp_print_bias(nnp, print_section)
       END IF
 
-      IF (logger%para_env%ionode) THEN
-         WRITE (unit_nr, *) "NNP: finished calculating energy and forces"
-         FLUSH(unit_nr)
-         DO j = 1, nnp%num_atoms
-            WRITE (unit_nr,*) "NNP: atom", j, "force", particle_set(j)%f(:)
-         END DO
-      END IF
-
       ! print properties if requested
       print_section => section_vals_get_subs_vals(nnp%nnp_input, "PRINT")
       CALL nnp_print(nnp, print_section)

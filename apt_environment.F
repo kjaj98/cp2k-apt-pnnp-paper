@@ -34,6 +34,7 @@ MODULE apt_environment
    USE distribution_1d_types,           ONLY: distribution_1d_release,&
                                               distribution_1d_type
    USE distribution_methods,            ONLY: distribute_molecules_1d
+   USE force_fields_util,               ONLY: get_generic_info
    USE input_section_types,             ONLY: section_vals_get,&
                                               section_vals_get_subs_vals,&
                                               section_vals_type,&
@@ -52,6 +53,10 @@ MODULE apt_environment
    USE particle_types,                  ONLY: particle_type
    USE periodic_table,                  ONLY: get_ptable_info
    USE apt_utils,                       ONLY: driver_connect
+   USE fparser,                         ONLY: evalf,&
+                                              finalizef,&
+                                              initf,&
+                                              parsef
 #include "./base/base_uses.f90"
 
    IMPLICIT NONE
@@ -225,8 +230,9 @@ CONTAINS
       CHARACTER(len=*), PARAMETER                        :: routineN = 'apt_init_model'
       TYPE(cp_logger_type), POINTER                      :: logger
       INTEGER                                            :: socket, unit_nr,handle
-      REAL(KIND=dp), DIMENSION(:), POINTER               :: r_vals_ptr
-      TYPE(section_vals_type), POINTER                   :: apt_input
+      REAL(KIND=dp)            :: res
+      TYPE(section_vals_type), POINTER                   :: e_field_vec_section, x_component_section, y_component_section, z_component_section
+      
       CALL timeset(routineN, handle)
       ! i only want to call this connection from one of the cp2k processes
       ! so i need to check if i'm the first process
@@ -235,43 +241,117 @@ CONTAINS
       logger => cp_get_default_logger()
       unit_nr = cp_logger_get_default_unit_nr(logger)
 
-      IF (logger%para_env%ionode) THEN
-         WRITE (unit_nr, *) "APT| About to try to connect to the server"
+      ! init the torch file name before attempting serrver connection
+      CALL section_vals_val_get(apt_env%apt_input,"TORCH_FILE",c_val=apt_env%torch_file)
+
+      apt_env%torch_file = TRIM(apt_env%torch_file)
+
+      if (logger%para_env%ionode) THEN
+         WRITE (unit_nr, *) "APT| Assigned the torch file name: ", TRIM(apt_env%torch_file)
+         FLUSH(unit_nr)
+      END IF
+
+      ! init the server_address before attempting server connection
+
+      CALL section_vals_val_get(apt_env%apt_input,"APT_SERVER",c_val=apt_env%host_address)
+      apt_env%host_address = TRIM(apt_env%host_address)
+
+      if (logger%para_env%ionode) THEN
+         WRITE (unit_nr, *) "APT| Assigned the server address: ", TRIM(apt_env%host_address)
+         FLUSH(unit_nr)
       END IF
 
 
+      e_field_vec_section => section_vals_get_subs_vals(apt_env%apt_input, "ELECTRIC_FIELD_VECTOR")
+      x_component_section => section_vals_get_subs_vals(e_field_vec_section, "X_component")
+      y_component_section => section_vals_get_subs_vals(e_field_vec_section, "Y_component")
+      z_component_section => section_vals_get_subs_vals(e_field_vec_section, "Z_component")
+      
+      ! get the generic info for each component of the electric field
+      !   SUBROUTINE get_generic_info(gen_section, func_name, xfunction, parameters, values, &
+      !                        var_values, size_variables, i_rep_sec, input_variables)
+      ! CALL get_generic_info(gen_section, "MIXING_FUNCTION", coupling_function, force_env%mixed_env%par, &
+      !                        force_env%mixed_env%val, energies)
+      if (logger%para_env%ionode) THEN
+         WRITE (unit_nr, *) "APT| About to get the generic info for the electric field components"
+         FLUSH(unit_nr)
+      END IF
+
+
+      CALL get_generic_info(x_component_section, "FUNCTION", apt_env%xefieldfunction,apt_env%xefieldparameters,apt_env%xefieldvalues,input_variables=apt_env%xefieldinputvariables)
+      CALL get_generic_info(y_component_section, "FUNCTION", apt_env%yefieldfunction,apt_env%yefieldparameters,apt_env%yefieldvalues,input_variables=apt_env%yefieldinputvariables)
+      CALL get_generic_info(z_component_section, "FUNCTION", apt_env%zefieldfunction,apt_env%zefieldparameters,apt_env%zefieldvalues,input_variables=apt_env%zefieldinputvariables)
+
+      CALL section_vals_val_get(e_field_vec_section, "MD_TIMESTEP", r_val=apt_env%md_timestep)
+      if (logger%para_env%ionode) THEN
+         WRITE (unit_nr, *) "APT| Got the generic info for the electric field components"
+         FLUSH(unit_nr)
+      END IF
+
+      
+
+
+      IF (logger%para_env%ionode) THEN
+         WRITE(unit_nr,*) ''
+         WRITE(unit_nr,*) 'this is the x component function ', apt_env%xefieldfunction
+         FLUSH(unit_nr)
+         WRITE(unit_nr,*) 'these are the x component parameters', apt_env%xefieldparameters
+         FLUSH(unit_nr)
+         WRITE(unit_nr,*) 'these are the x component values', apt_env%xefieldvalues
+         FLUSH(unit_nr)
+         WRITE(unit_nr,*) ''
+         FLUSH(unit_nr)
+
+         WRITE(unit_nr,*) ''
+         WRITE(unit_nr,*) 'this is the y component function', apt_env%yefieldfunction
+         WRITE(unit_nr,*) 'these are the y component parameters', apt_env%yefieldparameters
+         WRITE(unit_nr,*) 'these are the y component values', apt_env%yefieldvalues
+         WRITE(unit_nr,*) ''
+
+         WRITE(unit_nr,*) ''
+         WRITE(unit_nr,*) 'this is the z component function', apt_env%zefieldfunction
+         WRITE(unit_nr,*) 'these are the z component parameters', apt_env%zefieldparameters
+         WRITE(unit_nr,*) 'these are the z component values', apt_env%zefieldvalues
+         WRITE(unit_nr,*) ''
+
+         WRITE (unit_nr, *) "APT| Exiting apt_init_model"
+
+         FLUSH(unit_nr)
+      END IF
+      !! try parsf theses funcs to bytecode
+      !! **************************************************************************************************
+      !> \brief Parse ith function string FuncStr and compile it into bytecode
+      !> \param i Function identifier
+      !> \param FuncStr Function string
+      !> \param Var Array with variable names
+      ! **************************************************************************************************
+      ! SUBROUTINE parsef(i, FuncStr, Var)
+      apt_env%nevaluations=0
+
+      call initf(3)
+      call parsef(1, TRIM(apt_env%xefieldfunction), apt_env%xefieldparameters)
+      res = evalf(1, apt_env%xefieldvalues)
+      write(unit_nr,*) 'x component of electric field is ', res  
+      flush(unit_nr)
+      call parsef(2, TRIM(apt_env%yefieldfunction), apt_env%yefieldparameters)
+      res = evalf(2, apt_env%yefieldvalues)
+      write(unit_nr,*) 'y component of electric field is ', res
+      flush(unit_nr)
+      call parsef(3, TRIM(apt_env%zefieldfunction), apt_env%zefieldparameters)
+      res = evalf(3, apt_env%zefieldvalues)
+      write(unit_nr,*) 'z component of electric field is ', res
+      flush(unit_nr)
+      IF (logger%para_env%ionode) THEN
+         WRITE (unit_nr, *) "APT| About to try to connect to the server"
+      END IF
       call mp_sync(logger%para_env%group)
       IF (logger%para_env%ionode) THEN
-         call driver_connect(socket)
+         call driver_connect(apt_env,socket)
       END IF
       call mp_sync(logger%para_env%group)
       ! Handle potential MPI error
       ! need to implement a comm barrier below here
       apt_env%socket = socket
-
-      ! get the value for the electric field vector now too
-
-      !!get the electric field vector 
-      !allocate(r_vals_ptr(3))
-      !CALL section_vals_val_get(apt_env%apt_input, "E_FIELD_VECTOR", r_vals=r_vals_ptr)
-      !apt_env%electric_field=r_vals_ptr
-      !deallocate(r_vals_ptr)
-      !write(unit_nr,*) 'this is the electric field',apt_env%electric_field
-      !FLUSH(unit_nr)
-
-      CPASSERT(ASSOCIATED(apt_env))
-      CALL apt_env_get(apt_env=apt_env, apt_input=apt_input)                       
-      ALLOCATE (r_vals_ptr(3))
-      CALL section_vals_val_get(apt_env%apt_input, "E_FIELD_VECTOR", r_vals=r_vals_ptr)
-      apt_env%electric_field=r_vals_ptr
-      DEALLOCATE(r_vals_ptr)
-
-      IF (logger%para_env%ionode) THEN
-         WRITE(unit_nr,*) ''
-         WRITE(unit_nr,*) 'this is the electric field',apt_env%electric_field
-         WRITE (unit_nr, *) "APT| Exiting apt_init_model"
-         FLUSH(unit_nr)
-      END IF
       call mp_sync(logger%para_env%group) 
 
       

@@ -1,0 +1,344 @@
+36876 3
+234613 7
+147899 4
+24860 5
+228900 6
+229042 0
+30025 1
+ready, listening on /tmp/qiskit_apt.server.socket on host nid003697
+initialization took 153.51889481488615 seconds
+50389 2
+accepted connection from 
+Received Message-ID: 1
+Trying to open c-aptnn.torch as committee model
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:110: UserWarning: 'has_cuda' is deprecated, please use 'torch.backends.cuda.is_built()'
+  torch.has_cuda,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:111: UserWarning: 'has_cudnn' is deprecated, please use 'torch.backends.cudnn.is_available()'
+  torch.has_cudnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:117: UserWarning: 'has_mps' is deprecated, please use 'torch.backends.mps.is_built()'
+  torch.has_mps,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/overrides.py:118: UserWarning: 'has_mkldnn' is deprecated, please use 'torch.backends.mkldnn.is_available()'
+  torch.has_mkldnn,
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch/jit/_check.py:178: UserWarning: The TorchScript type system doesn't support instance-level annotations on empty non-base types in `__init__`. Instead, either 1) use a type annotation in the class body, or 2) wrap the type in `torch.jit.Attribute`.
+  warnings.warn(
+Rank 6 finished loading model
+Rank 0 finished loading model
+message processing took 27.016400260850787 seconds
+Rank 3 finished loading model
+Rank 4 finished loading model
+Rank 5 finished loading model
+Received Message-ID: 1
+Rank 7 finished loading model
+Rank 2 finished loading model
+Rank 1 finished loading model
+Received new simulation box definition:
+[[15.6627  0.      0.    ]
+ [ 0.     15.6627  0.    ]
+ [ 0.      0.     15.6627]]
+message processing took 0.33714192593470216 seconds
+Received Message-ID: 1
+message processing took 0.001354070845991373 seconds
+Received Message-ID: 0
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch_geometric/deprecation.py:22: UserWarning: 'data.DataLoader' is deprecated, use 'loader.DataLoader' instead
+  warnings.warn(out)
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch_geometric/deprecation.py:22: UserWarning: 'data.DataLoader' is deprecated, use 'loader.DataLoader' instead
+  warnings.warn(out)
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch_geometric/deprecation.py:22: UserWarning: 'data.DataLoader' is deprecated, use 'loader.DataLoader' instead
+  warnings.warn(out)
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch_geometric/deprecation.py:22: UserWarning: 'data.DataLoader' is deprecated, use 'loader.DataLoader' instead
+  warnings.warn(out)
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch_geometric/deprecation.py:22: UserWarning: 'data.DataLoader' is deprecated, use 'loader.DataLoader' instead
+  warnings.warn(out)
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch_geometric/deprecation.py:22: UserWarning: 'data.DataLoader' is deprecated, use 'loader.DataLoader' instead
+  warnings.warn(out)
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch_geometric/deprecation.py:22: UserWarning: 'data.DataLoader' is deprecated, use 'loader.DataLoader' instead
+  warnings.warn(out)
+/work/e686/e686/kjoll/software/Python-3.11.3/lib/python3.11/site-packages/torch_geometric/deprecation.py:22: UserWarning: 'data.DataLoader' is deprecated, use 'loader.DataLoader' instead
+  warnings.warn(out)
+message processing took 3.8253015419468284 seconds
+Received Message-ID: 0
+message processing took 1.8585123396478593 seconds
+Received Message-ID: 0
+message processing took 0.5760128600522876 seconds
+Received Message-ID: 0
+message processing took 0.5319057246670127 seconds
+Received Message-ID: 0
+message processing took 0.8553124801255763 seconds
+Received Message-ID: 0
+message processing took 2.463163509964943 seconds
+Received Message-ID: 0
+message processing took 0.6614973926916718 seconds
+Received Message-ID: 0
+message processing took 0.5263643269427121 seconds
+Received Message-ID: 0
+message processing took 0.703050279058516 seconds
+Received Message-ID: 0
+message processing took 0.6386369345709682 seconds
+Received Message-ID: 0
+message processing took 0.5313533148728311 seconds
+Received Message-ID: 0
+message processing took 0.5403817822225392 seconds
+Received Message-ID: 0
+message processing took 0.684076339006424 seconds
+Received Message-ID: 0
+message processing took 0.7657821709290147 seconds
+Received Message-ID: 0
+message processing took 0.5493633709847927 seconds
+Received Message-ID: 0
+message processing took 0.5481043811887503 seconds
+Received Message-ID: 0
+message processing took 0.9710922460071743 seconds
+Received Message-ID: 0
+message processing took 0.6659258431755006 seconds
+Received Message-ID: 0
+message processing took 2.6531056039966643 seconds
+Received Message-ID: 0
+message processing took 1.0968520804308355 seconds
+Received Message-ID: 0
+message processing took 0.8074448076076806 seconds
+Received Message-ID: 0
+message processing took 1.8209312870167196 seconds
+Received Message-ID: 0
+message processing took 1.0307175093330443 seconds
+Received Message-ID: 0
+message processing took 0.613176632206887 seconds
+Received Message-ID: 0
+message processing took 0.6708281529136002 seconds
+Received Message-ID: 0
+message processing took 0.5219799829646945 seconds
+Received Message-ID: 0
+message processing took 0.7299289479851723 seconds
+Received Message-ID: 0
+message processing took 0.8479645792394876 seconds
+Received Message-ID: 0
+message processing took 0.9967170348390937 seconds
+Received Message-ID: 0
+message processing took 0.6839254791848361 seconds
+Received Message-ID: 0
+message processing took 0.6288979011587799 seconds
+Received Message-ID: 0
+message processing took 0.5188046107068658 seconds
+Received Message-ID: 0
+message processing took 1.9387010880745947 seconds
+Received Message-ID: 0
+message processing took 0.773279489018023 seconds
+Received Message-ID: 0
+message processing took 0.5368536110036075 seconds
+Received Message-ID: 0
+message processing took 2.7966316528618336 seconds
+Received Message-ID: 0
+message processing took 0.6113044419325888 seconds
+Received Message-ID: 0
+message processing took 0.6190027892589569 seconds
+Received Message-ID: 0
+message processing took 0.5680468380451202 seconds
+Received Message-ID: 0
+message processing took 0.5964003051631153 seconds
+Received Message-ID: 0
+message processing took 1.013393878005445 seconds
+Received Message-ID: 0
+message processing took 0.7740237913094461 seconds
+Received Message-ID: 0
+message processing took 0.7131189969368279 seconds
+Received Message-ID: 0
+message processing took 0.6757074696943164 seconds
+Received Message-ID: 0
+message processing took 0.5549902622587979 seconds
+Received Message-ID: 0
+message processing took 1.1284583508968353 seconds
+Received Message-ID: 0
+message processing took 0.6665217131376266 seconds
+Received Message-ID: 0
+message processing took 0.9926380640827119 seconds
+Received Message-ID: 0
+message processing took 0.5485561061650515 seconds
+Received Message-ID: 0
+message processing took 0.5993502959609032 seconds
+Received Message-ID: 0
+message processing took 0.5427861548960209 seconds
+Received Message-ID: 0
+message processing took 0.5450011841021478 seconds
+Received Message-ID: 0
+message processing took 3.3918935009278357 seconds
+Received Message-ID: 0
+message processing took 1.0134749128483236 seconds
+Received Message-ID: 0
+message processing took 0.5502681457437575 seconds
+Received Message-ID: 0
+message processing took 2.18869715789333 seconds
+Received Message-ID: 0
+message processing took 1.349135257769376 seconds
+Received Message-ID: 0
+message processing took 0.7894499711692333 seconds
+Received Message-ID: 0
+message processing took 0.7964852531440556 seconds
+Received Message-ID: 0
+message processing took 0.6465149400755763 seconds
+Received Message-ID: 0
+message processing took 0.7872482291422784 seconds
+Received Message-ID: 0
+message processing took 1.0252599650993943 seconds
+Received Message-ID: 0
+message processing took 0.957387660164386 seconds
+Received Message-ID: 0
+message processing took 0.5252900463528931 seconds
+Received Message-ID: 0
+message processing took 0.5334145519882441 seconds
+Received Message-ID: 0
+message processing took 0.535183662083 seconds
+Received Message-ID: 0
+message processing took 0.7288553337566555 seconds
+Received Message-ID: 0
+message processing took 0.9647197327576578 seconds
+Received Message-ID: 0
+message processing took 3.1757057518698275 seconds
+Received Message-ID: 0
+message processing took 0.9869237006641924 seconds
+Received Message-ID: 0
+message processing took 0.6924368352629244 seconds
+Received Message-ID: 0
+message processing took 0.8855481292121112 seconds
+Received Message-ID: 0
+message processing took 0.6595158786512911 seconds
+Received Message-ID: 0
+message processing took 0.7111149351112545 seconds
+Received Message-ID: 0
+message processing took 0.5200340636074543 seconds
+Received Message-ID: 0
+message processing took 0.5304788299836218 seconds
+Received Message-ID: 0
+message processing took 0.8921295991167426 seconds
+Received Message-ID: 0
+message processing took 0.7560286428779364 seconds
+Received Message-ID: 0
+message processing took 0.7526816600002348 seconds
+Received Message-ID: 0
+message processing took 0.5378466411493719 seconds
+Received Message-ID: 0
+message processing took 0.5205095577985048 seconds
+Received Message-ID: 0
+message processing took 0.872117904946208 seconds
+Received Message-ID: 0
+message processing took 0.5534216770902276 seconds
+Received Message-ID: 0
+message processing took 0.7263458101078868 seconds
+Received Message-ID: 0
+message processing took 2.0849790549837053 seconds
+Received Message-ID: 0
+message processing took 1.5929940328933299 seconds
+Received Message-ID: 0
+message processing took 0.6544893989339471 seconds
+Received Message-ID: 0
+message processing took 1.2355170669034123 seconds
+Received Message-ID: 0
+message processing took 0.8971571889705956 seconds
+Received Message-ID: 0
+message processing took 0.7864723978564143 seconds
+Received Message-ID: 0
+message processing took 0.7596608051098883 seconds
+Received Message-ID: 0
+message processing took 0.637960143852979 seconds
+Received Message-ID: 0
+message processing took 0.6362815122120082 seconds
+Received Message-ID: 0
+message processing took 1.435893558897078 seconds
+Received Message-ID: 0
+message processing took 3.5576630998402834 seconds
+Received Message-ID: 0
+message processing took 0.8878109040670097 seconds
+Received Message-ID: 0
+message processing took 1.3478266457095742 seconds
+Received Message-ID: 0
+message processing took 0.5598945771344006 seconds
+Received Message-ID: 0
+message processing took 0.7553921169601381 seconds
+Received Message-ID: 0
+message processing took 0.525285080075264 seconds
+Received Message-ID: 0
+message processing took 0.6552606737241149 seconds

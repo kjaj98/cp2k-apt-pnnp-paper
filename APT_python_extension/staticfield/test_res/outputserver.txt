@@ -1,0 +1,197 @@
+rank 6 located on nid003761 mapped to CPU, using 128 threads
+rank 4 located on nid003741 mapped to CPU, using 128 threads
+rank 5 located on nid003758 mapped to CPU, using 128 threads
+rank 0 located on nid003697 mapped to CPU, using 128 threads
+rank 7 located on nid003762 mapped to CPU, using 128 threads
+rank 1 located on nid003714 mapped to CPU, using 128 threads
+rank 2 located on nid003715 mapped to CPU, using 128 threads
+rank 3 located on nid003740 mapped to CPU, using 128 threads
+# NOTE: could not find normalization mean in input file, setting to {'H': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]]), 'O': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]])}
+# NOTE: could not find normalization stddev in input file, setting to {'H': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]]), 'O': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]])}
+Used times in seconds: Recv: 0:00:00.003715 Predict: 0:00:03.809999 Send: 0:00:00.003159
+Used times in seconds: Recv: 0:00:00.000587 Predict: 0:00:01.845899 Send: 0:00:00.003206
+Used times in seconds: Recv: 0:00:00.000608 Predict: 0:00:00.563158 Send: 0:00:00.003145
+Used times in seconds: Recv: 0:00:00.000601 Predict: 0:00:00.519099 Send: 0:00:00.003136
+Used times in seconds: Recv: 0:00:00.000622 Predict: 0:00:00.842457 Send: 0:00:00.003155
+Used times in seconds: Recv: 0:00:00.000578 Predict: 0:00:02.450342 Send: 0:00:00.003139
+Used times in seconds: Recv: 0:00:00.000699 Predict: 0:00:00.648567 Send: 0:00:00.003164
+Used times in seconds: Recv: 0:00:00.000602 Predict: 0:00:00.513520 Send: 0:00:00.003152
+Used times in seconds: Recv: 0:00:00.000587 Predict: 0:00:00.690146 Send: 0:00:00.003167
+Used times in seconds: Recv: 0:00:00.000594 Predict: 0:00:00.625934 Send: 0:00:00.003146
+Used times in seconds: Recv: 0:00:00.000591 Predict: 0:00:00.518468 Send: 0:00:00.003147
+Used times in seconds: Recv: 0:00:00.000591 Predict: 0:00:00.527500 Send: 0:00:00.003149
+Used times in seconds: Recv: 0:00:00.000621 Predict: 0:00:00.671446 Send: 0:00:00.003162
+Used times in seconds: Recv: 0:00:00.000617 Predict: 0:00:00.752967 Send: 0:00:00.003132
+Used times in seconds: Recv: 0:00:00.000582 Predict: 0:00:00.536530 Send: 0:00:00.003137
+Used times in seconds: Recv: 0:00:00.000749 Predict: 0:00:00.535098 Send: 0:00:00.003154
+Used times in seconds: Recv: 0:00:00.000620 Predict: 0:00:00.958164 Send: 0:00:00.003205
+Used times in seconds: Recv: 0:00:00.000628 Predict: 0:00:00.653069 Send: 0:00:00.003155
+Used times in seconds: Recv: 0:00:00.000633 Predict: 0:00:02.640472 Send: 0:00:00.003210
+Used times in seconds: Recv: 0:00:00.000689 Predict: 0:00:01.083874 Send: 0:00:00.003163
+Used times in seconds: Recv: 0:00:00.000642 Predict: 0:00:00.794568 Send: 0:00:00.003148
+Used times in seconds: Recv: 0:00:00.000589 Predict: 0:00:01.808098 Send: 0:00:00.003149
+Used times in seconds: Recv: 0:00:00.000962 Predict: 0:00:01.017493 Send: 0:00:00.003119
+Used times in seconds: Recv: 0:00:00.000663 Predict: 0:00:00.600487 Send: 0:00:00.003150
+Used times in seconds: Recv: 0:00:00.000619 Predict: 0:00:00.657992 Send: 0:00:00.003119
+Used times in seconds: Recv: 0:00:00.000625 Predict: 0:00:00.509084 Send: 0:00:00.003211
+Used times in seconds: Recv: 0:00:00.000647 Predict: 0:00:00.716985 Send: 0:00:00.003174
+Used times in seconds: Recv: 0:00:00.000644 Predict: 0:00:00.835304 Send: 0:00:00.003194
+Used times in seconds: Recv: 0:00:00.000624 Predict: 0:00:00.984058 Send: 0:00:00.003144
+Used times in seconds: Recv: 0:00:00.000638 Predict: 0:00:00.671009 Send: 0:00:00.003134
+Used times in seconds: Recv: 0:00:00.000622 Predict: 0:00:00.616006 Send: 0:00:00.003175
+Used times in seconds: Recv: 0:00:00.000615 Predict: 0:00:00.505928 Send: 0:00:00.003132
+Used times in seconds: Recv: 0:00:00.000632 Predict: 0:00:01.925758 Send: 0:00:00.003169
+Used times in seconds: Recv: 0:00:00.000693 Predict: 0:00:00.760225 Send: 0:00:00.003255
+Used times in seconds: Recv: 0:00:00.000687 Predict: 0:00:00.523822 Send: 0:00:00.003145
+Used times in seconds: Recv: 0:00:00.000633 Predict: 0:00:02.783952 Send: 0:00:00.003187
+Used times in seconds: Recv: 0:00:00.000650 Predict: 0:00:00.598396 Send: 0:00:00.003228
+Used times in seconds: Recv: 0:00:00.000653 Predict: 0:00:00.606093 Send: 0:00:00.003184
+Used times in seconds: Recv: 0:00:00.000628 Predict: 0:00:00.555257 Send: 0:00:00.003168
+Used times in seconds: Recv: 0:00:00.000619 Predict: 0:00:00.583539 Send: 0:00:00.003190
+Used times in seconds: Recv: 0:00:00.000660 Predict: 0:00:01.000736 Send: 0:00:00.003168
+Used times in seconds: Recv: 0:00:00.000627 Predict: 0:00:00.761156 Send: 0:00:00.003160
+Used times in seconds: Recv: 0:00:00.000645 Predict: 0:00:00.700132 Send: 0:00:00.003224
+Used times in seconds: Recv: 0:00:00.000630 Predict: 0:00:00.662892 Send: 0:00:00.003170
+Used times in seconds: Recv: 0:00:00.000620 Predict: 0:00:00.542122 Send: 0:00:00.003171
+Used times in seconds: Recv: 0:00:00.000631 Predict: 0:00:01.115595 Send: 0:00:00.003247
+Used times in seconds: Recv: 0:00:00.000619 Predict: 0:00:00.653760 Send: 0:00:00.003167
+Used times in seconds: Recv: 0:00:00.000624 Predict: 0:00:00.979860 Send: 0:00:00.003171
+Used times in seconds: Recv: 0:00:00.000685 Predict: 0:00:00.535612 Send: 0:00:00.003194
+Used times in seconds: Recv: 0:00:00.000628 Predict: 0:00:00.586405 Send: 0:00:00.003204
+Used times in seconds: Recv: 0:00:00.000627 Predict: 0:00:00.529944 Send: 0:00:00.003192
+Used times in seconds: Recv: 0:00:00.000624 Predict: 0:00:00.532076 Send: 0:00:00.003209
+Used times in seconds: Recv: 0:00:00.000631 Predict: 0:00:03.381541 Send: 0:00:00.002618
+Used times in seconds: Recv: 0:00:00.000918 Predict: 0:00:01.000316 Send: 0:00:00.003183
+Used times in seconds: Recv: 0:00:00.000847 Predict: 0:00:00.537313 Send: 0:00:00.002782
+Used times in seconds: Recv: 0:00:00.000883 Predict: 0:00:02.175871 Send: 0:00:00.002613
+Used times in seconds: Recv: 0:00:00.000893 Predict: 0:00:01.338641 Send: 0:00:00.002610
+Used times in seconds: Recv: 0:00:00.000894 Predict: 0:00:00.776609 Send: 0:00:00.002603
+Used times in seconds: Recv: 0:00:00.000899 Predict: 0:00:00.783536 Send: 0:00:00.002650
+Used times in seconds: Recv: 0:00:00.000917 Predict: 0:00:00.636157 Send: 0:00:00.002593
+Used times in seconds: Recv: 0:00:00.000861 Predict: 0:00:00.774424 Send: 0:00:00.002636
+Used times in seconds: Recv: 0:00:00.000878 Predict: 0:00:01.014776 Send: 0:00:00.002639
+Used times in seconds: Recv: 0:00:00.000865 Predict: 0:00:00.944630 Send: 0:00:00.002612
+Used times in seconds: Recv: 0:00:00.000885 Predict: 0:00:00.514069 Send: 0:00:00.002645
+Used times in seconds: Recv: 0:00:00.000870 Predict: 0:00:00.519908 Send: 0:00:00.002691
+Used times in seconds: Recv: 0:00:00.000892 Predict: 0:00:00.524461 Send: 0:00:00.002665
+Used times in seconds: Recv: 0:00:00.000904 Predict: 0:00:00.708560 Send: 0:00:00.002597
+Used times in seconds: Recv: 0:00:00.000875 Predict: 0:00:00.951159 Send: 0:00:00.002627
+Used times in seconds: Recv: 0:00:00.000913 Predict: 0:00:03.165017 Send: 0:00:00.002639
+Used times in seconds: Recv: 0:00:00.000888 Predict: 0:00:00.976210 Send: 0:00:00.002618
+Used times in seconds: Recv: 0:00:00.000897 Predict: 0:00:00.681917 Send: 0:00:00.002608
+Used times in seconds: Recv: 0:00:00.000861 Predict: 0:00:00.872624 Send: 0:00:00.002702
+Used times in seconds: Recv: 0:00:00.000871 Predict: 0:00:00.645772 Send: 0:00:00.002683
+Used times in seconds: Recv: 0:00:00.000901 Predict: 0:00:00.698354 Send: 0:00:00.002687
+Used times in seconds: Recv: 0:00:00.000884 Predict: 0:00:00.507348 Send: 0:00:00.002709
+Used times in seconds: Recv: 0:00:00.000891 Predict: 0:00:00.516885 Send: 0:00:00.002709
+Used times in seconds: Recv: 0:00:00.000886 Predict: 0:00:00.881749 Send: 0:00:00.002597
+Used times in seconds: Recv: 0:00:00.000885 Predict: 0:00:00.742544 Send: 0:00:00.002700
+Used times in seconds: Recv: 0:00:00.000905 Predict: 0:00:00.742126 Send: 0:00:00.002579
+Used times in seconds: Recv: 0:00:00.000858 Predict: 0:00:00.527116 Send: 0:00:00.002687
+Used times in seconds: Recv: 0:00:00.000874 Predict: 0:00:00.509778 Send: 0:00:00.002686
+Used times in seconds: Recv: 0:00:00.000867 Predict: 0:00:00.861631 Send: 0:00:00.002621
+Used times in seconds: Recv: 0:00:00.000884 Predict: 0:00:00.539791 Send: 0:00:00.002713
+Used times in seconds: Recv: 0:00:00.000893 Predict: 0:00:00.715943 Send: 0:00:00.002611
+Used times in seconds: Recv: 0:00:00.000861 Predict: 0:00:02.072051 Send: 0:00:00.003190
+Used times in seconds: Recv: 0:00:00.000609 Predict: 0:00:01.580437 Send: 0:00:00.003170
+Used times in seconds: Recv: 0:00:00.000652 Predict: 0:00:00.641793 Send: 0:00:00.003178
+Used times in seconds: Recv: 0:00:00.000614 Predict: 0:00:01.222848 Send: 0:00:00.003171
+Used times in seconds: Recv: 0:00:00.000605 Predict: 0:00:00.884184 Send: 0:00:00.003186
+Used times in seconds: Recv: 0:00:00.000606 Predict: 0:00:00.773743 Send: 0:00:00.003212
+Used times in seconds: Recv: 0:00:00.000599 Predict: 0:00:00.747014 Send: 0:00:00.003176
+Used times in seconds: Recv: 0:00:00.000657 Predict: 0:00:00.624862 Send: 0:00:00.003175
+Used times in seconds: Recv: 0:00:00.000634 Predict: 0:00:00.623375 Send: 0:00:00.003193
+Used times in seconds: Recv: 0:00:00.000642 Predict: 0:00:01.423305 Send: 0:00:00.003226
+Used times in seconds: Recv: 0:00:00.000669 Predict: 0:00:03.544966 Send: 0:00:00.003216
+Used times in seconds: Recv: 0:00:00.000618 Predict: 0:00:00.874942 Send: 0:00:00.003227
+Used times in seconds: Recv: 0:00:00.000632 Predict: 0:00:01.335249 Send: 0:00:00.003209
+Used times in seconds: Recv: 0:00:00.000623 Predict: 0:00:00.547301 Send: 0:00:00.003200
+Used times in seconds: Recv: 0:00:00.000617 Predict: 0:00:00.742724 Send: 0:00:00.003196
+Used times in seconds: Recv: 0:00:00.000609 Predict: 0:00:00.512341 Send: 0:00:00.003263
+Used times in seconds: Recv: 0:00:00.000619 Predict: 0:00:00.642345 Send: 0:00:00.003202
+rank 0: Socket ronnection closed, exiting
+# NOTE: could not find normalization mean in input file, setting to {'H': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]]), 'O': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]])}
+# NOTE: could not find normalization stddev in input file, setting to {'H': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]]), 'O': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]])}
+rank 7: Socket ronnection closed, exiting
+# NOTE: could not find normalization mean in input file, setting to {'H': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]]), 'O': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]])}
+# NOTE: could not find normalization stddev in input file, setting to {'H': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]]), 'O': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]])}
+rank 5: Socket ronnection closed, exiting
+# NOTE: could not find normalization mean in input file, setting to {'H': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]]), 'O': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]])}
+# NOTE: could not find normalization stddev in input file, setting to {'H': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]]), 'O': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]])}
+rank 3: Socket ronnection closed, exiting
+# NOTE: could not find normalization mean in input file, setting to {'H': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]]), 'O': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]])}
+# NOTE: could not find normalization stddev in input file, setting to {'H': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]]), 'O': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]])}
+rank 2: Socket ronnection closed, exiting
+# NOTE: could not find normalization mean in input file, setting to {'H': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]]), 'O': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]])}
+# NOTE: could not find normalization stddev in input file, setting to {'H': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]]), 'O': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]])}
+rank 4: Socket ronnection closed, exiting
+# NOTE: could not find normalization mean in input file, setting to {'H': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]]), 'O': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]])}
+# NOTE: could not find normalization stddev in input file, setting to {'H': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]]), 'O': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]])}
+rank 1: Socket ronnection closed, exiting
+# NOTE: could not find normalization mean in input file, setting to {'H': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]]), 'O': array([[0., 0., 0.],
+       [0., 0., 0.],
+       [0., 0., 0.]])}
+# NOTE: could not find normalization stddev in input file, setting to {'H': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]]), 'O': array([[1., 1., 1.],
+       [1., 1., 1.],
+       [1., 1., 1.]])}
+rank 6: Socket ronnection closed, exiting
