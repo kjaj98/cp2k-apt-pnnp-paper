@@ -24,7 +24,7 @@ MODULE apt_environment_types
                                               cp_subsys_type
    USE distribution_1d_types,           ONLY: distribution_1d_type
    USE input_section_types,             ONLY: section_vals_type
-   USE kinds,                           ONLY: default_string_length,&
+   USE kinds,                           ONLY: default_path_length,default_string_length,&
                                               dp
    USE molecule_kind_list_types,        ONLY: molecule_kind_list_create,&
                                               molecule_kind_list_release,&
@@ -66,13 +66,14 @@ MODULE apt_environment_types
       INTEGER                                             :: n_ele ! # elements
       CHARACTER(len=2), ALLOCATABLE, DIMENSION(:)         :: ele ! elements(n_ele)
       INTEGER, ALLOCATABLE, DIMENSION(:)                  :: nuc_ele ! elements(n_ele)
-      INTEGER                                             :: num_atoms
+      INTEGER                                             :: num_atoms,nevaluations
       REAL(KIND=dp), ALLOCATABLE, DIMENSION(:, :)         :: coord
       REAL(KIND=dp), ALLOCATABLE, DIMENSION(:, :, :)      :: myforce
       CHARACTER(len=default_string_length), &
          ALLOCATABLE, DIMENSION(:)                        :: atoms
       REAL(KIND=dp), DIMENSION(:, :), ALLOCATABLE         :: apt_forces
       REAL(KIND=dp)                                       :: apt_potential_energy
+      REAL(KIND=dp)                                       :: md_timestep
       TYPE(cp_subsys_type), POINTER                       :: subsys
       TYPE(section_vals_type), POINTER                    :: apt_input, &
                                                              force_env_input
@@ -82,7 +83,14 @@ MODULE apt_environment_types
       INTEGER                                             :: socket
       REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:,:) :: apt_tensors
       REAL(KIND=dp), ALLOCATABLE, DIMENSION(:,:,:) :: apt_tensor_variance
-      REAL(KIND=dp), DIMENSION(3) :: electric_field
+      REAL(KIND=dp), ALLOCATABLE, DIMENSION(:) :: electric_field
+      CHARACTER(LEN=default_path_length)                           :: xefieldfunction, yefieldfunction, zefieldfunction
+      CHARACTER(LEN=default_string_length), &
+         DIMENSION(:), POINTER                                     :: xefieldparameters => NULL() , yefieldparameters => NULL()  , zefieldparameters => NULL()
+      REAL(KIND=dp),  DIMENSION(:) , POINTER                        :: xefieldvalues => NULL() , yefieldvalues => NULL() , zefieldvalues    => NULL()
+      CHARACTER(LEN=default_string_length),DIMENSION(:),POINTER                      :: xefieldinputvariables => NULL(), yefieldinputvariables => NULL(), zefieldinputvariables => NULL()
+      CHARACTER(LEN=default_string_length)                      :: torch_file, host_address
+
    END TYPE apt_type
 CONTAINS
 ! **************************************************************************************************

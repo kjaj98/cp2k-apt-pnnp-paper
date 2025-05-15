@@ -1,3 +1,17 @@
+ Creating APT section
+ Creating subsections
+ Creating efield subsection
+ calling section_create efield subsection
+ Creating efield component subsections
+ inside efield component subsection
+ Creating keywords
+ after x component subsection
+ inside efield component subsection
+ Creating keywords
+ after y component subsection
+ inside efield component subsection
+ Creating keywords
+ after z component subsection
  DBCSR| CPU Multiplication driver                                           BLAS (U)
  DBCSR| Multrec recursion limit                                              512 (U)
  DBCSR| Multiplication stack size                                           1000 (D)
@@ -10,31 +24,30 @@
  DBCSR| Use MPI memory allocation                                              F (U)
  DBCSR| Use RMA algorithm                                                      F (U)
  DBCSR| Use Communication thread                                               T (U)
- DBCSR| Communication thread load                                             87 (D)
+ DBCSR| Communication thread load                                              0 (D)
  DBCSR| MPI: My process id                                                     0
  DBCSR| MPI: Number of processes                                            1024
- DBCSR| OMP: Current number of threads                                         1
- DBCSR| OMP: Max number of threads                                             1
+ DBCSR| OMP: Current number of threads                                       128
+ DBCSR| OMP: Max number of threads                                           128
  DBCSR| Split modifier for TAS multiplication algorithm                  1.0E+00 (U)
 
 
-  **** **** ******  **  PROGRAM STARTED AT               2024-09-02 12:04:50.575
- ***** ** ***  *** **   PROGRAM STARTED ON                             nid006831
- **    ****   ******    PROGRAM STARTED BY                               cmmp_kj
- ***** **    ** ** **   PROGRAM PROCESS ID                                260689
-  **** **  *******  **  PROGRAM STARTED IN /mnt/lustre/a2fs-work2/work/e05/e05/c
-                                           mmp_kj/testing_cp2k_apt_time_indep/cp
-                                           2k/cp2k-2023.1/testing_apt_ext/timein
-                                           deptest
+  **** **** ******  **  PROGRAM STARTED AT               2024-07-10 16:53:52.245
+ ***** ** ***  *** **   PROGRAM STARTED ON                             nid003697
+ **    ****   ******    PROGRAM STARTED BY                                 kjoll
+ ***** **    ** ** **   PROGRAM PROCESS ID                                229396
+  **** **  *******  **  PROGRAM STARTED IN /mnt/lustre/a2fs-work2/work/e686/e686
+                                           /shared/apt-devel/test.new/post_phili
+                                           pp_test_retestvs_orig
 
  CP2K| version string:                                       CP2K version 2023.1
  CP2K| source code revision number:                                  git:b888bd8
  CP2K| cp2kflags: omp libint fftw3 libxc elpa parallel scalapack plumed2 mkl    
  CP2K| is freely available from                            https://www.cp2k.org/
- CP2K| Program compiled at                          Mon  2 Sep 11:10:18 BST 2024
- CP2K| Program compiled on                                                  ln04
+ CP2K| Program compiled at                       Fri 12 Apr 2024 12:13:55 PM BST
+ CP2K| Program compiled on                                                  ln03
  CP2K| Program compiled for                                              ARCHER2
- CP2K| Data directory path    /work/e05/e05/cmmp_kj/testing_cp2k_apt_time_indep/
+ CP2K| Data directory path      /work/e686/e686/kjoll/apps/cp2k/cp2k-2023.1/data
  CP2K| Input file name                                                 start.inp
 
  GLOBAL| Force Environment number                                              1
@@ -53,7 +66,7 @@
  GLOBAL| MM Potential file name                                     MM_POTENTIAL
  GLOBAL| Coordinate file name                                            pos.xyz
  GLOBAL| Method name                                                        CP2K
- GLOBAL| Project name                                                  trying_md
+ GLOBAL| Project name                                                 excitation
  GLOBAL| Run type                                                             MD
  GLOBAL| FFT library                                                       FFTW3
  GLOBAL| Diagonalization library                                            ELPA
@@ -67,7 +80,7 @@
  GLOBAL| Global print level                                                  LOW
  GLOBAL| MPI I/O enabled                                                       T
  GLOBAL| Total number of message passing processes                          1024
- GLOBAL| Number of threads for this process                                    1
+ GLOBAL| Number of threads for this process                                  128
  GLOBAL| This output is from process                                           0
  GLOBAL| Stack size for threads created by OpenMP (OMP_STACKSIZE)        default
  GLOBAL| CPU model name                          AMD EPYC 7742 64-Core Processor
@@ -76,12 +89,12 @@
  MEMORY| system memory details [Kb]
  MEMORY|                        rank 0           min           max       average
  MEMORY| MemTotal            263341976     263341976     263341976     263341976
- MEMORY| MemFree             225706320     225316224     226737400     225994853
+ MEMORY| MemFree             225695972     225695972     226112572     225984249
  MEMORY| Buffers                     0             0             0             0
- MEMORY| Cached                2891008       2454200       2891008       2555259
- MEMORY| Slab                  6126836       6085988       6126836       6111627
- MEMORY| SReclaimable           934912        927376        934912        929692
- MEMORY| MemLikelyFree       229532240     228822664     230118976     229479806
+ MEMORY| Cached                2271400       2129440       2271400       2154548
+ MEMORY| Slab                  6258400       6230252       6258400       6239250
+ MEMORY| SReclaimable           933476        928824        933476        930164
+ MEMORY| MemLikelyFree       228900848     228900848     229176096     229068961
 
  MIXED_ENV| Number of created MPI groups:                                      1
  MIXED_ENV| Task to group correspondence:
@@ -353,10 +366,10 @@
  MD_PAR| Temperature tolerance [K]                                      0.000000
  MD_PAR| Print MD information every                                    1 step(s)
  MD_PAR| File type   Print frequency [steps]                          File names
- MD_PAR| Coordinates          1                              trying_md-pos-1.xyz
- MD_PAR| Velocities           1                              trying_md-vel-1.xyz
- MD_PAR| Energies             1                                 trying_md-1.ener
- MD_PAR| Dump                20                              trying_md-1.restart
+ MD_PAR| Coordinates          1                             excitation-pos-1.xyz
+ MD_PAR| Velocities           1                             excitation-vel-1.xyz
+ MD_PAR| Energies             1                                excitation-1.ener
+ MD_PAR| Dump                20                             excitation-1.restart
 
  ROT| Rotational analysis information
  ROT| Principal axes and moments of inertia [a.u.]
@@ -422,22 +435,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.616348122839554
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                               1
  MD| Time [fs]                                                          1.000000
  MD| Conserved quantity [hartree]                            -0.221010826472E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      7.625905             7.625905
+ MD| CPU time per MD step [s]                      5.916530             5.916530
  MD| Energy drift per atom [K]          -0.180955785254E-01   0.000000000000E+00
  MD| Potential energy [hartree]         -0.221061634812E+04  -0.221061634812E+04
  MD| Kinetic energy [hartree]            0.508083401001E+00   0.508083401001E+00
  MD| Temperature [K]                             279.268681           279.268681
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     166
+ MD| Estimated peak process memory after this step [MiB]                     169
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -454,22 +464,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.603570366538861
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                               2
  MD| Time [fs]                                                          2.000000
  MD| Conserved quantity [hartree]                            -0.221010624482E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      2.120370             4.873137
+ MD| CPU time per MD step [s]                      0.949835             3.433183
  MD| Energy drift per atom [K]           0.164292583499E+01   0.821462917493E+00
  MD| Potential energy [hartree]         -0.221060357037E+04  -0.221060995924E+04
  MD| Kinetic energy [hartree]            0.497325541570E+00   0.502704471286E+00
  MD| Temperature [K]                             273.355610           276.312145
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     166
+ MD| Estimated peak process memory after this step [MiB]                     169
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -486,22 +493,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.616696287021114
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                               3
  MD| Time [fs]                                                          3.000000
  MD| Conserved quantity [hartree]                            -0.221010801203E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.142387             3.629554
+ MD| CPU time per MD step [s]                      0.577531             2.481299
  MD| Energy drift per atom [K]           0.189697849998E+00   0.610874561661E+00
  MD| Potential energy [hartree]         -0.221061669629E+04  -0.221061220493E+04
  MD| Kinetic energy [hartree]            0.508684253855E+00   0.504697732142E+00
  MD| Temperature [K]                             279.598940           277.407744
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     166
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -518,22 +522,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.634859894257715
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                               4
  MD| Time [fs]                                                          4.000000
  MD| Conserved quantity [hartree]                            -0.221011017795E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.823353             3.178004
+ MD| CPU time per MD step [s]                      0.903407             2.086826
  MD| Energy drift per atom [K]          -0.159140094060E+01   0.603056860954E-01
  MD| Potential energy [hartree]         -0.221063485989E+04  -0.221061786867E+04
  MD| Kinetic energy [hartree]            0.524681943276E+00   0.509693784926E+00
  MD| Temperature [K]                             288.392090           280.153830
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     166
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -550,22 +551,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.629350975878879
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                               5
  MD| Time [fs]                                                          5.000000
  MD| Conserved quantity [hartree]                            -0.221010869088E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.629309             2.668265
+ MD| CPU time per MD step [s]                      2.513016             2.172064
  MD| Energy drift per atom [K]          -0.368540552319E+00  -0.254635615874E-01
  MD| Potential energy [hartree]         -0.221062935098E+04  -0.221062016513E+04
  MD| Kinetic energy [hartree]            0.520660092945E+00   0.511887046529E+00
  MD| Temperature [K]                             286.181475           281.359359
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     166
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -582,22 +580,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.618279779330805
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                               6
  MD| Time [fs]                                                          6.000000
  MD| Conserved quantity [hartree]                            -0.221010756147E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.535315             2.312773
+ MD| CPU time per MD step [s]                      1.735094             2.099235
  MD| Energy drift per atom [K]           0.560212442679E+00   0.721491057903E-01
  MD| Potential energy [hartree]         -0.221061827978E+04  -0.221061985090E+04
  MD| Kinetic energy [hartree]            0.510718313063E+00   0.511692257618E+00
  MD| Temperature [K]                             280.716963           281.252293
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     166
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -614,22 +609,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.619066940471384
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                               7
  MD| Time [fs]                                                          7.000000
  MD| Conserved quantity [hartree]                            -0.221010813279E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.531571             2.058316
+ MD| CPU time per MD step [s]                      0.618409             1.887689
  MD| Energy drift per atom [K]           0.903938704058E-01   0.747555007353E-01
  MD| Potential energy [hartree]         -0.221061906694E+04  -0.221061973891E+04
  MD| Kinetic energy [hartree]            0.510934147997E+00   0.511583956244E+00
  MD| Temperature [K]                             280.835597           281.192765
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -646,22 +638,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.625424934142757
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                               8
  MD| Time [fs]                                                          8.000000
  MD| Conserved quantity [hartree]                            -0.221010896673E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.990322             1.924816
+ MD| CPU time per MD step [s]                      0.754922             1.746093
  MD| Energy drift per atom [K]          -0.595375907374E+00  -0.901092527833E-02
  MD| Potential energy [hartree]         -0.221062542493E+04  -0.221062044966E+04
  MD| Kinetic energy [hartree]            0.516458206466E+00   0.512193237522E+00
  MD| Temperature [K]                             283.871903           281.527658
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -678,22 +667,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.626411332829775
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                               9
  MD| Time [fs]                                                          9.000000
  MD| Conserved quantity [hartree]                            -0.221010918893E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.568478             1.774112
+ MD| CPU time per MD step [s]                      0.689537             1.628698
  MD| Energy drift per atom [K]          -0.778099303839E+00  -0.944651895629E-01
  MD| Potential energy [hartree]         -0.221062641133E+04  -0.221062111207E+04
  MD| Kinetic energy [hartree]            0.517222403071E+00   0.512752033694E+00
  MD| Temperature [K]                             284.291945           281.834801
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -710,22 +696,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.620488492696495
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              10
  MD| Time [fs]                                                         10.000000
  MD| Conserved quantity [hartree]                            -0.221010885083E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.527233             1.649424
+ MD| CPU time per MD step [s]                      0.580941             1.523922
  MD| Energy drift per atom [K]          -0.500068304446E+00  -0.135025501051E+00
  MD| Potential energy [hartree]         -0.221062048849E+04  -0.221062104971E+04
  MD| Kinetic energy [hartree]            0.511637664507E+00   0.512640596775E+00
  MD| Temperature [K]                             281.222286           281.773549
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -742,22 +725,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.616061022036320
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              11
  MD| Time [fs]                                                         11.000000
  MD| Conserved quantity [hartree]                            -0.221010826315E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.549731             1.549452
+ MD| CPU time per MD step [s]                      0.593844             1.439370
  MD| Energy drift per atom [K]          -0.168047359339E-01  -0.124278158768E+00
  MD| Potential energy [hartree]         -0.221061606102E+04  -0.221062059620E+04
  MD| Kinetic energy [hartree]            0.507797869936E+00   0.512200348881E+00
  MD| Temperature [K]                             279.111738           281.531566
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -774,22 +754,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.621932993402424
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              12
  MD| Time [fs]                                                         12.000000
  MD| Conserved quantity [hartree]                            -0.221010892533E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.124744             1.514060
+ MD| CPU time per MD step [s]                      0.753940             1.382251
  MD| Energy drift per atom [K]          -0.561331881614E+00  -0.160699302338E+00
  MD| Potential energy [hartree]         -0.221062193299E+04  -0.221062070760E+04
  MD| Kinetic energy [hartree]            0.513007665205E+00   0.512267625241E+00
  MD| Temperature [K]                             281.975309           281.568545
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -806,22 +783,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.629988705093183
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              13
  MD| Time [fs]                                                         13.000000
  MD| Conserved quantity [hartree]                            -0.221010913348E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.900255             1.466844
+ MD| CPU time per MD step [s]                      1.748766             1.410444
  MD| Energy drift per atom [K]          -0.732499678846E+00  -0.204683946685E+00
  MD| Potential energy [hartree]         -0.221062998871E+04  -0.221062142153E+04
  MD| Kinetic energy [hartree]            0.520855227082E+00   0.512928209998E+00
  MD| Temperature [K]                             286.288731           281.931636
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -838,22 +812,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.634357624373024
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              14
  MD| Time [fs]                                                         14.000000
  MD| Conserved quantity [hartree]                            -0.221010893998E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.863428             1.423743
+ MD| CPU time per MD step [s]                      1.100395             1.388298
  MD| Energy drift per atom [K]          -0.573383174819E+00  -0.231019605838E+00
  MD| Potential energy [hartree]         -0.221063435762E+04  -0.221062234553E+04
  MD| Kinetic energy [hartree]            0.525417641115E+00   0.513820312221E+00
  MD| Temperature [K]                             288.796468           282.421981
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -870,22 +841,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.634704788863928
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              15
  MD| Time [fs]                                                         15.000000
  MD| Conserved quantity [hartree]                            -0.221010875986E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.737121             1.377968
+ MD| CPU time per MD step [s]                      1.664123             1.406686
  MD| Energy drift per atom [K]          -0.425258741853E+00  -0.243968881572E+00
  MD| Potential energy [hartree]         -0.221063470479E+04  -0.221062316948E+04
  MD| Kinetic energy [hartree]            0.525944933373E+00   0.514628620297E+00
  MD| Temperature [K]                             289.086294           282.866269
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -902,22 +870,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.631778382491575
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              16
  MD| Time [fs]                                                         16.000000
  MD| Conserved quantity [hartree]                            -0.221010823683E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.524418             1.324621
+ MD| CPU time per MD step [s]                      1.035065             1.383460
  MD| Energy drift per atom [K]           0.484097037894E-02  -0.228418265825E+00
  MD| Potential energy [hartree]         -0.221063177838E+04  -0.221062370754E+04
  MD| Kinetic energy [hartree]            0.523541552806E+00   0.515185678579E+00
  MD| Temperature [K]                             287.765273           283.172456
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -934,22 +899,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.629386889455873
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              17
  MD| Time [fs]                                                         17.000000
  MD| Conserved quantity [hartree]                            -0.221010846474E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.978309             1.304250
+ MD| CPU time per MD step [s]                      0.791413             1.348633
  MD| Energy drift per atom [K]          -0.182573188426E+00  -0.225721496566E+00
  MD| Potential energy [hartree]         -0.221062938689E+04  -0.221062404162E+04
  MD| Kinetic energy [hartree]            0.520922153453E+00   0.515523118278E+00
  MD| Temperature [K]                             286.325517           283.357931
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -966,22 +928,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.623662718336163
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              18
  MD| Time [fs]                                                         18.000000
  MD| Conserved quantity [hartree]                            -0.221010859480E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.602126             1.265243
+ MD| CPU time per MD step [s]                      2.738899             1.425870
  MD| Energy drift per atom [K]          -0.289526821603E+00  -0.229266236846E+00
  MD| Potential energy [hartree]         -0.221062366272E+04  -0.221062402057E+04
  MD| Kinetic energy [hartree]            0.515067920609E+00   0.515497829518E+00
  MD| Temperature [K]                             283.107731           283.344031
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -998,22 +957,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.613869743312989
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              19
  MD| Time [fs]                                                         19.000000
  MD| Conserved quantity [hartree]                            -0.221010783998E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.889715             1.298110
+ MD| CPU time per MD step [s]                      1.151222             1.411415
  MD| Energy drift per atom [K]           0.331181926646E+00  -0.199768965083E+00
  MD| Potential energy [hartree]         -0.221061386974E+04  -0.221062348632E+04
  MD| Kinetic energy [hartree]            0.506029762861E+00   0.514999510221E+00
  MD| Temperature [K]                             278.139896           283.070129
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1030,22 +986,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.612883653648169
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              20
  MD| Time [fs]                                                         20.000000
  MD| Conserved quantity [hartree]                            -0.221010779442E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.600456             1.263227
+ MD| CPU time per MD step [s]                      1.297912             1.405740
  MD| Energy drift per atom [K]           0.368649376926E+00  -0.171348047983E+00
  MD| Potential energy [hartree]         -0.221061288365E+04  -0.221062295618E+04
  MD| Kinetic energy [hartree]            0.505089235755E+00   0.514503996497E+00
  MD| Temperature [K]                             277.622934           282.797769
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1062,22 +1015,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.620985770998232
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              21
  MD| Time [fs]                                                         21.000000
  MD| Conserved quantity [hartree]                            -0.221011004305E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.574944             1.230452
+ MD| CPU time per MD step [s]                      2.355340             1.450959
  MD| Energy drift per atom [K]          -0.148047045892E+01  -0.233687210409E+00
  MD| Potential energy [hartree]         -0.221062098577E+04  -0.221062286235E+04
  MD| Kinetic energy [hartree]            0.510942717816E+00   0.514334411798E+00
  MD| Temperature [K]                             280.840308           282.704557
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1094,22 +1044,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.613021563548500
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              22
  MD| Time [fs]                                                         22.000000
  MD| Conserved quantity [hartree]                            -0.221010922490E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.540527             1.199092
+ MD| CPU time per MD step [s]                      4.070012             1.570007
  MD| Energy drift per atom [K]          -0.807676652195E+00  -0.259777639581E+00
  MD| Potential energy [hartree]         -0.221061302156E+04  -0.221062241504E+04
  MD| Kinetic energy [hartree]            0.503796666046E+00   0.513855423355E+00
  MD| Temperature [K]                             276.912471           282.441280
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1126,22 +1073,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.600343969086225
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              23
  MD| Time [fs]                                                         23.000000
  MD| Conserved quantity [hartree]                            -0.221010777330E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.536899             1.170301
+ MD| CPU time per MD step [s]                      1.594134             1.571056
  MD| Energy drift per atom [K]           0.386016372586E+00  -0.231699639052E+00
  MD| Potential energy [hartree]         -0.221060034397E+04  -0.221062145543E+04
  MD| Kinetic energy [hartree]            0.492570670452E+00   0.512929999316E+00
  MD| Temperature [K]                             270.742089           281.932620
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1158,22 +1102,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.603954234758930
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              24
  MD| Time [fs]                                                         24.000000
  MD| Conserved quantity [hartree]                            -0.221010885312E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.542320             1.144135
+ MD| CPU time per MD step [s]                      0.987336             1.546734
  MD| Energy drift per atom [K]          -0.501952542032E+00  -0.242960176676E+00
  MD| Potential energy [hartree]         -0.221060395423E+04  -0.221062072622E+04
  MD| Kinetic energy [hartree]            0.495101115228E+00   0.512187129145E+00
  MD| Temperature [K]                             272.132951           281.524300
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1190,22 +1131,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.612419915761620
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              25
  MD| Time [fs]                                                         25.000000
  MD| Conserved quantity [hartree]                            -0.221010941019E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.195552             1.146192
+ MD| CPU time per MD step [s]                      0.572625             1.507770
  MD| Energy drift per atom [K]          -0.960047642273E+00  -0.271643675300E+00
  MD| Potential energy [hartree]         -0.221061241992E+04  -0.221062039396E+04
  MD| Kinetic energy [hartree]            0.503009726436E+00   0.511820033037E+00
  MD| Temperature [K]                             276.479929           281.322525
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1222,22 +1160,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.615645763149587
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              26
  MD| Time [fs]                                                         26.000000
  MD| Conserved quantity [hartree]                            -0.221010959490E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.542116             1.122958
+ MD| CPU time per MD step [s]                      0.778370             1.479716
  MD| Energy drift per atom [K]          -0.111193707976E+01  -0.303962652394E+00
  MD| Potential energy [hartree]         -0.221061564576E+04  -0.221062021134E+04
  MD| Kinetic energy [hartree]            0.506050867596E+00   0.511598142058E+00
  MD| Temperature [K]                             278.151496           281.200563
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1254,22 +1189,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.609325824767893
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              27
  MD| Time [fs]                                                         27.000000
  MD| Conserved quantity [hartree]                            -0.221010963378E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.751367             1.109195
+ MD| CPU time per MD step [s]                      1.862150             1.493880
  MD| Energy drift per atom [K]          -0.114391425207E+01  -0.335071970901E+00
  MD| Potential energy [hartree]         -0.221060932582E+04  -0.221061980817E+04
  MD| Kinetic energy [hartree]            0.499692043147E+00   0.511157175432E+00
  MD| Temperature [K]                             274.656360           280.958185
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1286,22 +1218,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.595573632073410
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              28
  MD| Time [fs]                                                         28.000000
  MD| Conserved quantity [hartree]                            -0.221010789687E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.533802             1.088646
+ MD| CPU time per MD step [s]                      1.055328             1.478218
  MD| Energy drift per atom [K]           0.284400866287E+00  -0.312947941001E+00
  MD| Potential energy [hartree]         -0.221059557363E+04  -0.221061894265E+04
  MD| Kinetic energy [hartree]            0.487676763182E+00   0.510318589280E+00
  MD| Temperature [K]                             268.052147           280.497255
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1318,22 +1247,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.597889874212342
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              29
  MD| Time [fs]                                                         29.000000
  MD| Conserved quantity [hartree]                            -0.221010777371E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.544421             1.069879
+ MD| CPU time per MD step [s]                      0.734104             1.452559
  MD| Energy drift per atom [K]           0.385678261741E+00  -0.288857382286E+00
  MD| Potential energy [hartree]         -0.221059788987E+04  -0.221061821670E+04
  MD| Kinetic energy [hartree]            0.490116164416E+00   0.509621953940E+00
  MD| Temperature [K]                             269.392966           280.114348
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1350,22 +1276,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.616599854246488
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              30
  MD| Time [fs]                                                         30.000000
  MD| Conserved quantity [hartree]                            -0.221011017102E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.574347             1.053361
+ MD| CPU time per MD step [s]                      0.679862             1.426802
  MD| Energy drift per atom [K]          -0.158569924608E+01  -0.332085444412E+00
  MD| Potential energy [hartree]         -0.221061659985E+04  -0.221061816280E+04
  MD| Kinetic energy [hartree]            0.506428836851E+00   0.509515516704E+00
  MD| Temperature [K]                             278.359247           280.055845
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     170
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1382,22 +1305,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.620583447739591
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              31
  MD| Time [fs]                                                         31.000000
  MD| Conserved quantity [hartree]                            -0.221010998167E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.528529             1.036431
+ MD| CPU time per MD step [s]                      0.567306             1.399076
  MD| Energy drift per atom [K]          -0.142999025527E+01  -0.367501728634E+00
  MD| Potential energy [hartree]         -0.221062058345E+04  -0.221061824089E+04
  MD| Kinetic energy [hartree]            0.510601781366E+00   0.509550557499E+00
  MD| Temperature [K]                             280.652912           280.075105
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     171
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1414,22 +1334,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.610814455655600
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              32
  MD| Time [fs]                                                         32.000000
  MD| Conserved quantity [hartree]                            -0.221010845102E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.538555             1.020873
+ MD| CPU time per MD step [s]                      1.989046             1.417513
  MD| Energy drift per atom [K]          -0.171290299146E+00  -0.361370121462E+00
  MD| Potential energy [hartree]         -0.221061081446E+04  -0.221061800881E+04
  MD| Kinetic energy [hartree]            0.502363440291E+00   0.509325960087E+00
  MD| Temperature [K]                             276.124697           279.951655
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     171
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1446,22 +1363,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.608840791186140
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              33
  MD| Time [fs]                                                         33.000000
  MD| Conserved quantity [hartree]                            -0.221010842189E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.555073             1.006758
+ MD| CPU time per MD step [s]                      2.521140             1.450956
  MD| Energy drift per atom [K]          -0.147336014366E+00  -0.354884239429E+00
  MD| Potential energy [hartree]         -0.221060884079E+04  -0.221061773099E+04
  MD| Kinetic energy [hartree]            0.500418905599E+00   0.509056049345E+00
  MD| Temperature [K]                             275.055881           279.803298
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     171
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1478,22 +1392,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.616935401492356
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              34
  MD| Time [fs]                                                         34.000000
  MD| Conserved quantity [hartree]                            -0.221010878751E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.537763             0.992964
+ MD| CPU time per MD step [s]                      0.585096             1.425490
  MD| Energy drift per atom [K]          -0.447999687900E+00  -0.357622929090E+00
  MD| Potential energy [hartree]         -0.221061693540E+04  -0.221061770759E+04
  MD| Kinetic energy [hartree]            0.508147891713E+00   0.509029338826E+00
  MD| Temperature [K]                             279.304128           279.788617
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     171
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1510,22 +1421,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.628508373585191
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              35
  MD| Time [fs]                                                         35.000000
  MD| Conserved quantity [hartree]                            -0.221010886788E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.580019             0.981165
+ MD| CPU time per MD step [s]                      3.600852             1.487643
  MD| Energy drift per atom [K]          -0.514086761778E+00  -0.362093324309E+00
  MD| Potential energy [hartree]         -0.221062850837E+04  -0.221061801619E+04
  MD| Kinetic energy [hartree]            0.519640498151E+00   0.509332514807E+00
  MD| Temperature [K]                             285.621054           279.955258
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     171
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1542,22 +1450,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.636946276411891
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              36
  MD| Time [fs]                                                         36.000000
  MD| Conserved quantity [hartree]                            -0.221010958965E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.550362             0.969198
+ MD| CPU time per MD step [s]                      1.449650             1.486588
  MD| Energy drift per atom [K]          -0.110762571447E+01  -0.382802557369E+00
  MD| Potential energy [hartree]         -0.221063694628E+04  -0.221061854202E+04
  MD| Kinetic energy [hartree]            0.527356623725E+00   0.509833184499E+00
  MD| Temperature [K]                             289.862232           280.230451
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     171
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1574,22 +1479,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.631313109728126
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              37
  MD| Time [fs]                                                         37.000000
  MD| Conserved quantity [hartree]                            -0.221010842198E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.470812             0.982756
+ MD| CPU time per MD step [s]                      0.669199             1.464496
  MD| Energy drift per atom [K]          -0.147417545691E+00  -0.376440800297E+00
  MD| Potential energy [hartree]         -0.221063131311E+04  -0.221061888719E+04
  MD| Kinetic energy [hartree]            0.522891124994E+00   0.510186101810E+00
  MD| Temperature [K]                             287.407765           280.424433
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     167
+ MD| Estimated peak process memory after this step [MiB]                     171
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1606,22 +1508,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.625039671193463
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              38
  MD| Time [fs]                                                         38.000000
  MD| Conserved quantity [hartree]                            -0.221010723817E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.543826             0.971205
+ MD| CPU time per MD step [s]                      0.616668             1.442185
  MD| Energy drift per atom [K]           0.826068050177E+00  -0.344795830548E+00
  MD| Potential energy [hartree]         -0.221062503967E+04  -0.221061904909E+04
  MD| Kinetic energy [hartree]            0.517801500522E+00   0.510386507039E+00
  MD| Temperature [K]                             284.610246           280.534586
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     171
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1638,22 +1537,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.631882634089379
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              39
  MD| Time [fs]                                                         39.000000
  MD| Conserved quantity [hartree]                            -0.221010816902E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.931594             0.970189
+ MD| CPU time per MD step [s]                      0.646313             1.421778
  MD| Energy drift per atom [K]           0.606017963940E-01  -0.334401019600E+00
  MD| Potential energy [hartree]         -0.221063188263E+04  -0.221061937816E+04
  MD| Kinetic energy [hartree]            0.523713612752E+00   0.510728227698E+00
  MD| Temperature [K]                             287.859846           280.722413
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     171
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1670,22 +1566,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.639838468771813
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              40
  MD| Time [fs]                                                         40.000000
  MD| Conserved quantity [hartree]                            -0.221010847531E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.540833             0.959455
+ MD| CPU time per MD step [s]                      3.447215             1.472414
  MD| Energy drift per atom [K]          -0.191268507262E+00  -0.330822706792E+00
  MD| Potential energy [hartree]         -0.221063983847E+04  -0.221061988967E+04
  MD| Kinetic energy [hartree]            0.531363158765E+00   0.511244100975E+00
  MD| Temperature [K]                             292.064429           281.005963
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     171
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1702,22 +1595,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.643612610097989
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              41
  MD| Time [fs]                                                         41.000000
  MD| Conserved quantity [hartree]                            -0.221010825260E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.716262             0.953524
+ MD| CPU time per MD step [s]                      0.845830             1.457131
  MD| Energy drift per atom [K]          -0.812554229513E-02  -0.322952044243E+00
  MD| Potential energy [hartree]         -0.221064361261E+04  -0.221062046828E+04
  MD| Kinetic energy [hartree]            0.535360012392E+00   0.511832293936E+00
  MD| Temperature [K]                             294.261304           281.329264
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1734,22 +1624,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.647244666608913
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              42
  MD| Time [fs]                                                         42.000000
  MD| Conserved quantity [hartree]                            -0.221010857264E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.826043             0.950488
+ MD| CPU time per MD step [s]                      0.763561             1.440618
  MD| Energy drift per atom [K]          -0.271309318921E+00  -0.321722455545E+00
  MD| Potential energy [hartree]         -0.221064724467E+04  -0.221062110581E+04
  MD| Kinetic energy [hartree]            0.538672022405E+00   0.512471335090E+00
  MD| Temperature [K]                             296.081755           281.680514
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1766,22 +1653,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.648790725334948
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              43
  MD| Time [fs]                                                         43.000000
  MD| Conserved quantity [hartree]                            -0.221010909127E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.888943             0.949057
+ MD| CPU time per MD step [s]                      0.726556             1.424012
  MD| Energy drift per atom [K]          -0.697790605465E+00  -0.330468226474E+00
  MD| Potential energy [hartree]         -0.221064879073E+04  -0.221062174964E+04
  MD| Kinetic energy [hartree]            0.539699455538E+00   0.513104547194E+00
  MD| Temperature [K]                             296.646485           282.028560
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1798,22 +1682,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.644584124659104
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              44
  MD| Time [fs]                                                         44.000000
  MD| Conserved quantity [hartree]                            -0.221010849134E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.730114             0.944081
+ MD| CPU time per MD step [s]                      0.603596             1.405366
  MD| Energy drift per atom [K]          -0.204450819958E+00  -0.327604194507E+00
  MD| Potential energy [hartree]         -0.221064458412E+04  -0.221062226861E+04
  MD| Kinetic energy [hartree]            0.536092784208E+00   0.513627007126E+00
  MD| Temperature [K]                             294.664073           282.315731
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1830,22 +1711,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.642530672888824
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              45
  MD| Time [fs]                                                         45.000000
  MD| Conserved quantity [hartree]                            -0.221010845840E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.296170             0.951905
+ MD| CPU time per MD step [s]                      1.178524             1.400325
  MD| Energy drift per atom [K]          -0.177361526607E+00  -0.324265468554E+00
  MD| Potential energy [hartree]         -0.221064253067E+04  -0.221062271888E+04
  MD| Kinetic energy [hartree]            0.534072274564E+00   0.514081346402E+00
  MD| Temperature [K]                             293.553498           282.565459
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1862,22 +1740,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.642368786518091
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              46
  MD| Time [fs]                                                         46.000000
  MD| Conserved quantity [hartree]                            -0.221010898243E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.531878             0.942774
+ MD| CPU time per MD step [s]                      1.561396             1.403826
  MD| Energy drift per atom [K]          -0.608291443992E+00  -0.330439946281E+00
  MD| Potential energy [hartree]         -0.221064236879E+04  -0.221062314605E+04
  MD| Kinetic energy [hartree]            0.533386352812E+00   0.514501020455E+00
  MD| Temperature [K]                             293.176480           282.796133
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1894,22 +1769,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.635451281809765
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              47
  MD| Time [fs]                                                         47.000000
  MD| Conserved quantity [hartree]                            -0.221010858474E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.617725             0.935858
+ MD| CPU time per MD step [s]                      1.042184             1.396132
  MD| Energy drift per atom [K]          -0.281252156478E+00  -0.329393397562E+00
  MD| Potential energy [hartree]         -0.221063545128E+04  -0.221062340786E+04
  MD| Kinetic energy [hartree]            0.526866546548E+00   0.514764116754E+00
  MD| Temperature [K]                             289.592860           282.940745
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1926,22 +1798,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.625217081201754
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              48
  MD| Time [fs]                                                         48.000000
  MD| Conserved quantity [hartree]                            -0.221010748609E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.715804             0.931274
+ MD| CPU time per MD step [s]                      0.598146             1.379507
  MD| Energy drift per atom [K]           0.622193589069E+00  -0.309568668673E+00
  MD| Potential energy [hartree]         -0.221062521708E+04  -0.221062344555E+04
  MD| Kinetic energy [hartree]            0.517730987546E+00   0.514825926563E+00
  MD| Temperature [K]                             284.571489           282.974718
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1958,22 +1827,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.625022657422051
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              49
  MD| Time [fs]                                                         49.000000
  MD| Conserved quantity [hartree]                            -0.221010745518E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.752591             0.927627
+ MD| CPU time per MD step [s]                      0.647692             1.364572
  MD| Energy drift per atom [K]           0.647615037943E+00  -0.290034307314E+00
  MD| Potential energy [hartree]         -0.221062502266E+04  -0.221062347774E+04
  MD| Kinetic energy [hartree]            0.517567477700E+00   0.514881876586E+00
  MD| Temperature [K]                             284.481615           283.005471
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -1990,22 +1856,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.635513014279695
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              50
  MD| Time [fs]                                                         50.000000
  MD| Conserved quantity [hartree]                            -0.221010839854E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.938544             0.927846
+ MD| CPU time per MD step [s]                      0.592102             1.349123
  MD| Energy drift per atom [K]          -0.128135361535E+00  -0.286796328398E+00
  MD| Potential energy [hartree]         -0.221063551301E+04  -0.221062371845E+04
  MD| Kinetic energy [hartree]            0.527114477783E+00   0.515126528610E+00
  MD| Temperature [K]                             289.729136           283.139945
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2022,22 +1885,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.644968690045062
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              51
  MD| Time [fs]                                                         51.000000
  MD| Conserved quantity [hartree]                            -0.221010903846E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.666350             0.922718
+ MD| CPU time per MD step [s]                      0.593730             1.334311
  MD| Energy drift per atom [K]          -0.654364422299E+00  -0.294003545926E+00
  MD| Potential energy [hartree]         -0.221064496869E+04  -0.221062413512E+04
  MD| Kinetic energy [hartree]            0.535930228967E+00   0.515534444303E+00
  MD| Temperature [K]                             294.574725           283.364156
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2054,22 +1914,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.644719942791653
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              52
  MD| Time [fs]                                                         52.000000
  MD| Conserved quantity [hartree]                            -0.221010969967E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.532752             0.915219
+ MD| CPU time per MD step [s]                      3.557396             1.377063
  MD| Energy drift per atom [K]          -0.119809568978E+01  -0.311389933308E+00
  MD| Potential energy [hartree]         -0.221064471994E+04  -0.221062453098E+04
  MD| Kinetic energy [hartree]            0.535020273449E+00   0.515909171787E+00
  MD| Temperature [K]                             294.074567           283.570125
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2086,22 +1943,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.630231549203927
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              53
  MD| Time [fs]                                                         53.000000
  MD| Conserved quantity [hartree]                            -0.221010856251E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.523010             0.907819
+ MD| CPU time per MD step [s]                      1.097726             1.371792
  MD| Energy drift per atom [K]          -0.262978217288E+00  -0.310476504703E+00
  MD| Potential energy [hartree]         -0.221063023155E+04  -0.221062463854E+04
  MD| Kinetic energy [hartree]            0.521669036096E+00   0.516017848472E+00
  MD| Temperature [K]                             286.736042           283.629860
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2118,22 +1972,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.618909464504668
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              54
  MD| Time [fs]                                                         54.000000
  MD| Conserved quantity [hartree]                            -0.221010757012E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.562697             0.901428
+ MD| CPU time per MD step [s]                      0.621401             1.357896
  MD| Energy drift per atom [K]           0.553092990636E+00  -0.294484477012E+00
  MD| Potential energy [hartree]         -0.221061890946E+04  -0.221062453244E+04
  MD| Kinetic energy [hartree]            0.511339340576E+00   0.515931209437E+00
  MD| Temperature [K]                             281.058312           283.582238
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2150,22 +2001,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.622871467791811
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              55
  MD| Time [fs]                                                         55.000000
  MD| Conserved quantity [hartree]                            -0.221010883745E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.566925             0.895346
+ MD| CPU time per MD step [s]                      2.240183             1.373938
  MD| Energy drift per atom [K]          -0.489065696157E+00  -0.298022317360E+00
  MD| Potential energy [hartree]         -0.221062287147E+04  -0.221062450224E+04
  MD| Kinetic energy [hartree]            0.514034019402E+00   0.515896715072E+00
  MD| Temperature [K]                             282.539446           283.563279
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2182,22 +2030,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.621991672046079
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              56
  MD| Time [fs]                                                         56.000000
  MD| Conserved quantity [hartree]                            -0.221010960122E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.668820             0.891301
+ MD| CPU time per MD step [s]                      2.615114             1.396102
  MD| Energy drift per atom [K]          -0.111714130180E+01  -0.312649442082E+00
  MD| Potential energy [hartree]         -0.221062199167E+04  -0.221062445741E+04
  MD| Kinetic energy [hartree]            0.512390447861E+00   0.515834103158E+00
  MD| Temperature [K]                             281.636054           283.528864
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2214,22 +2059,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.601204027459062
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              57
  MD| Time [fs]                                                         57.000000
  MD| Conserved quantity [hartree]                            -0.221010770496E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.535389             0.885057
+ MD| CPU time per MD step [s]                      0.840760             1.386359
  MD| Energy drift per atom [K]           0.442213928148E+00  -0.299406225061E+00
  MD| Potential energy [hartree]         -0.221060120403E+04  -0.221062404946E+04
  MD| Kinetic energy [hartree]            0.493499068261E+00   0.515442260440E+00
  MD| Temperature [K]                             271.252384           283.313487
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     173
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2246,22 +2088,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.582468382543539
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              58
  MD| Time [fs]                                                         58.000000
  MD| Conserved quantity [hartree]                            -0.221010561887E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.310248             0.892387
+ MD| CPU time per MD step [s]                      0.847592             1.377070
  MD| Energy drift per atom [K]           0.215766404112E+01  -0.257042944609E+00
  MD| Potential energy [hartree]         -0.221058246838E+04  -0.221062333254E+04
  MD| Kinetic energy [hartree]            0.476849508621E+00   0.514776868168E+00
  MD| Temperature [K]                             262.100932           282.947753
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2278,22 +2117,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.591162299478128
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              59
  MD| Time [fs]                                                         59.000000
  MD| Conserved quantity [hartree]                            -0.221010672243E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.393087             0.900874
+ MD| CPU time per MD step [s]                      0.713178             1.365817
  MD| Energy drift per atom [K]           0.125017866871E+01  -0.231496815570E+00
  MD| Potential energy [hartree]         -0.221059116230E+04  -0.221062278728E+04
  MD| Kinetic energy [hartree]            0.484439871532E+00   0.514262681784E+00
  MD| Temperature [K]                             266.272985           282.665130
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2310,22 +2146,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.612238233215976
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              60
  MD| Time [fs]                                                         60.000000
  MD| Conserved quantity [hartree]                            -0.221010866063E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.882358             0.900565
+ MD| CPU time per MD step [s]                      0.977924             1.359352
  MD| Energy drift per atom [K]          -0.343666753602E+00  -0.233366314537E+00
  MD| Potential energy [hartree]         -0.221061223823E+04  -0.221062261147E+04
  MD| Kinetic energy [hartree]            0.503577598241E+00   0.514084597058E+00
  MD| Temperature [K]                             276.792061           282.567246
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2342,22 +2175,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.618913892606088
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              61
  MD| Time [fs]                                                         61.000000
  MD| Conserved quantity [hartree]                            -0.221010920884E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.631760             0.896159
+ MD| CPU time per MD step [s]                      2.034422             1.370419
  MD| Energy drift per atom [K]          -0.794474230588E+00  -0.242564804964E+00
  MD| Potential energy [hartree]         -0.221061891389E+04  -0.221062255085E+04
  MD| Kinetic energy [hartree]            0.509705050002E+00   0.514012801205E+00
  MD| Temperature [K]                             280.160022           282.527783
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2374,22 +2204,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.607299510986195
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              62
  MD| Time [fs]                                                         62.000000
  MD| Conserved quantity [hartree]                            -0.221010797048E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.526947             0.890204
+ MD| CPU time per MD step [s]                      1.257714             1.368601
  MD| Energy drift per atom [K]           0.223867370412E+00  -0.235041705361E+00
  MD| Potential energy [hartree]         -0.221060729951E+04  -0.221062230486E+04
  MD| Kinetic energy [hartree]            0.499329029908E+00   0.513775966184E+00
  MD| Temperature [K]                             274.456830           282.397606
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2406,22 +2233,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.600483412503763
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              63
  MD| Time [fs]                                                         63.000000
  MD| Conserved quantity [hartree]                            -0.221010686144E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.529416             0.884477
+ MD| CPU time per MD step [s]                      0.579964             1.356083
  MD| Energy drift per atom [K]           0.113586408135E+01  -0.213281296048E+00
  MD| Potential energy [hartree]         -0.221060048341E+04  -0.221062195849E+04
  MD| Kinetic energy [hartree]            0.493621971493E+00   0.513456061506E+00
  MD| Temperature [K]                             271.319938           282.221770
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2438,22 +2262,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.616107153114172
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              64
  MD| Time [fs]                                                         64.000000
  MD| Conserved quantity [hartree]                            -0.221010851676E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.531991             0.878969
+ MD| CPU time per MD step [s]                      0.583206             1.344007
  MD| Energy drift per atom [K]          -0.225351531760E+00  -0.213469893481E+00
  MD| Potential energy [hartree]         -0.221061610715E+04  -0.221062186706E+04
  MD| Kinetic energy [hartree]            0.507590396204E+00   0.513364410486E+00
  MD| Temperature [K]                             278.997700           282.171394
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2470,22 +2291,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.630781696466784
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              65
  MD| Time [fs]                                                         65.000000
  MD| Conserved quantity [hartree]                            -0.221011040947E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.011357             0.881006
+ MD| CPU time per MD step [s]                      0.637357             1.333135
  MD| Energy drift per atom [K]          -0.178178854488E+01  -0.237597872734E+00
  MD| Potential energy [hartree]         -0.221063078170E+04  -0.221062200421E+04
  MD| Kinetic energy [hartree]            0.520372223289E+00   0.513472222991E+00
  MD| Temperature [K]                             286.023247           282.230653
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2502,22 +2320,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.616685395990316
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              66
  MD| Time [fs]                                                         66.000000
  MD| Conserved quantity [hartree]                            -0.221010850773E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.456307             0.889723
+ MD| CPU time per MD step [s]                      0.773199             1.324652
  MD| Energy drift per atom [K]          -0.217927990305E+00  -0.237299844212E+00
  MD| Potential energy [hartree]         -0.221061668540E+04  -0.221062192362E+04
  MD| Kinetic energy [hartree]            0.508177666530E+00   0.513392002438E+00
  MD| Temperature [K]                             279.320494           282.186560
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2534,22 +2349,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.595934941530231
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              67
  MD| Time [fs]                                                         67.000000
  MD| Conserved quantity [hartree]                            -0.221010583736E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.592353             0.885284
+ MD| CPU time per MD step [s]                      1.021237             1.320123
  MD| Energy drift per atom [K]           0.197799674705E+01  -0.204235715984E+00
  MD| Potential energy [hartree]         -0.221059593494E+04  -0.221062153573E+04
  MD| Kinetic energy [hartree]            0.490097581920E+00   0.513044324520E+00
  MD| Temperature [K]                             269.382753           281.995459
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2566,22 +2378,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.603022949969727
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              68
  MD| Time [fs]                                                         68.000000
  MD| Conserved quantity [hartree]                            -0.221010611237E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.053606             0.887760
+ MD| CPU time per MD step [s]                      3.249748             1.348500
  MD| Energy drift per atom [K]           0.175184910449E+01  -0.175469762742E+00
  MD| Potential energy [hartree]         -0.221060302295E+04  -0.221062126349E+04
  MD| Kinetic energy [hartree]            0.496910581915E+00   0.512807063599E+00
  MD| Temperature [K]                             273.127527           281.865048
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2598,22 +2407,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.632512174191561
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              69
  MD| Time [fs]                                                         69.000000
  MD| Conserved quantity [hartree]                            -0.221010810328E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.540083             0.882721
+ MD| CPU time per MD step [s]                      1.153755             1.345677
  MD| Energy drift per atom [K]           0.114658829150E+00  -0.171265000541E+00
  MD| Potential energy [hartree]         -0.221063251217E+04  -0.221062142651E+04
  MD| Kinetic energy [hartree]            0.524408889292E+00   0.512975206001E+00
  MD| Temperature [K]                             288.242006           281.957467
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2630,22 +2436,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.653734040867221
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              70
  MD| Time [fs]                                                         70.000000
  MD| Conserved quantity [hartree]                            -0.221010906468E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.531170             0.877699
+ MD| CPU time per MD step [s]                      0.993014             1.340639
  MD| Energy drift per atom [K]          -0.675923613998E+00  -0.178474409304E+00
  MD| Potential energy [hartree]         -0.221065373404E+04  -0.221062188805E+04
  MD| Kinetic energy [hartree]            0.544669362581E+00   0.513427979666E+00
  MD| Temperature [K]                             299.378201           282.206335
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2662,22 +2465,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.652043472441619
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              71
  MD| Time [fs]                                                         71.000000
  MD| Conserved quantity [hartree]                            -0.221010784564E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.546276             0.873031
+ MD| CPU time per MD step [s]                      2.595449             1.358313
  MD| Energy drift per atom [K]           0.326526264966E+00  -0.171361723751E+00
  MD| Potential energy [hartree]         -0.221065204347E+04  -0.221062231277E+04
  MD| Kinetic energy [hartree]            0.544197830440E+00   0.513861357846E+00
  MD| Temperature [K]                             299.119022           282.444542
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2694,22 +2494,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.645755900054610
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              72
  MD| Time [fs]                                                         72.000000
  MD| Conserved quantity [hartree]                            -0.221010609452E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.553476             0.868593
+ MD| CPU time per MD step [s]                      2.662727             1.376430
  MD| Energy drift per atom [K]           0.176652591046E+01  -0.144446617720E+00
  MD| Potential energy [hartree]         -0.221064575590E+04  -0.221062263837E+04
  MD| Kinetic energy [hartree]            0.539661379834E+00   0.514219691485E+00
  MD| Temperature [K]                             296.625556           282.641500
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2726,22 +2523,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.658286174055320
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              73
  MD| Time [fs]                                                         73.000000
  MD| Conserved quantity [hartree]                            -0.221010699465E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.580436             0.864645
+ MD| CPU time per MD step [s]                      0.905325             1.369976
  MD| Energy drift per atom [K]           0.102632503357E+01  -0.128408649895E+00
  MD| Potential energy [hartree]         -0.221065828617E+04  -0.221062312670E+04
  MD| Kinetic energy [hartree]            0.551291527309E+00   0.514727524852E+00
  MD| Temperature [K]                             303.018082           282.920632
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2758,22 +2552,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.674247396737883
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              74
  MD| Time [fs]                                                         74.000000
  MD| Conserved quantity [hartree]                            -0.221010909246E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.890237             0.864991
+ MD| CPU time per MD step [s]                      0.572188             1.359195
  MD| Energy drift per atom [K]          -0.698772949372E+00  -0.136116275563E+00
  MD| Potential energy [hartree]         -0.221067424740E+04  -0.221062381752E+04
  MD| Kinetic energy [hartree]            0.565154932355E+00   0.515408976305E+00
  MD| Temperature [K]                             310.638120           283.295192
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2790,22 +2581,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.661457592862916
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              75
  MD| Time [fs]                                                         75.000000
  MD| Conserved quantity [hartree]                            -0.221010796397E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.649998             0.862124
+ MD| CPU time per MD step [s]                      0.580195             1.348809
  MD| Energy drift per atom [K]           0.229225615550E+00  -0.131245050348E+00
  MD| Potential energy [hartree]         -0.221066145759E+04  -0.221062431938E+04
  MD| Kinetic energy [hartree]            0.553493627717E+00   0.515916771657E+00
  MD| Temperature [K]                             304.228469           283.574303
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2822,22 +2610,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.630362681163660
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              76
  MD| Time [fs]                                                         76.000000
  MD| Conserved quantity [hartree]                            -0.221010520546E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.551535             0.858038
+ MD| CPU time per MD step [s]                      0.961820             1.343717
  MD| Energy drift per atom [K]           0.249762552497E+01  -0.966546480415E-01
  MD| Potential energy [hartree]         -0.221063036268E+04  -0.221062439890E+04
  MD| Kinetic energy [hartree]            0.525157219814E+00   0.516038356501E+00
  MD| Temperature [K]                             288.653327           283.641132
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2854,22 +2639,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.616361782832882
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              77
  MD| Time [fs]                                                         77.000000
  MD| Conserved quantity [hartree]                            -0.221010428816E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.455419             0.865796
+ MD| CPU time per MD step [s]                      0.817302             1.336880
  MD| Energy drift per atom [K]           0.325195204739E+01  -0.531662493995E-01
  MD| Potential energy [hartree]         -0.221061636178E+04  -0.221062429452E+04
  MD| Kinetic energy [hartree]            0.512073625600E+00   0.515986866490E+00
  MD| Temperature [K]                             281.461913           283.612830
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2886,22 +2668,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.630200609388339
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              78
  MD| Time [fs]                                                         78.000000
  MD| Conserved quantity [hartree]                            -0.221010578326E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.534890             0.861554
+ MD| CPU time per MD step [s]                      1.285238             1.336218
  MD| Energy drift per atom [K]           0.202248217255E+01  -0.265553721950E-01
  MD| Potential energy [hartree]         -0.221063020061E+04  -0.221062437024E+04
  MD| Kinetic energy [hartree]            0.524417346595E+00   0.516094949568E+00
  MD| Temperature [K]                             288.246654           283.672238
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2918,22 +2697,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.647315818046081
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              79
  MD| Time [fs]                                                         79.000000
  MD| Conserved quantity [hartree]                            -0.221010786036E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.552923             0.857647
+ MD| CPU time per MD step [s]                      1.637008             1.340025
  MD| Energy drift per atom [K]           0.314420192984E+00  -0.222392258004E-01
  MD| Potential energy [hartree]         -0.221064731582E+04  -0.221062466069E+04
  MD| Kinetic energy [hartree]            0.539455454370E+00   0.516390652160E+00
  MD| Temperature [K]                             296.512369           283.834772
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2950,22 +2726,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.638998422089571
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              80
  MD| Time [fs]                                                         80.000000
  MD| Conserved quantity [hartree]                            -0.221010704853E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.560948             0.853938
+ MD| CPU time per MD step [s]                      0.756181             1.332727
  MD| Energy drift per atom [K]           0.982012922615E+00  -0.968607394518E-02
  MD| Potential energy [hartree]         -0.221063899842E+04  -0.221062483991E+04
  MD| Kinetic energy [hartree]            0.531949889286E+00   0.516585142624E+00
  MD| Temperature [K]                             292.386926           283.941674
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -2982,22 +2755,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.617808508276084
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              81
  MD| Time [fs]                                                         81.000000
  MD| Conserved quantity [hartree]                            -0.221010499747E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.214762             0.858393
+ MD| CPU time per MD step [s]                      1.001234             1.328635
  MD| Energy drift per atom [K]           0.266866203129E+01   0.233799520454E-01
  MD| Potential energy [hartree]         -0.221061780851E+04  -0.221062475311E+04
  MD| Kinetic energy [hartree]            0.512811037083E+00   0.516538548729E+00
  MD| Temperature [K]                             281.867232           283.916063
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3014,22 +2784,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.615627208438582
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              82
  MD| Time [fs]                                                         82.000000
  MD| Conserved quantity [hartree]                            -0.221010490847E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.572566             0.854907
+ MD| CPU time per MD step [s]                      0.603186             1.319788
  MD| Energy drift per atom [K]           0.274185381227E+01   0.565320722920E-01
  MD| Potential energy [hartree]         -0.221061562721E+04  -0.221062464181E+04
  MD| Kinetic energy [hartree]            0.510718742630E+00   0.516467575484E+00
  MD| Temperature [K]                             280.717200           283.877053
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3046,22 +2813,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.634234160741016
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              83
  MD| Time [fs]                                                         83.000000
  MD| Conserved quantity [hartree]                            -0.221010729465E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.836480             0.854685
+ MD| CPU time per MD step [s]                      0.801919             1.313549
  MD| Energy drift per atom [K]           0.779621264661E+00   0.652439902724E-01
  MD| Potential energy [hartree]         -0.221063423416E+04  -0.221062475738E+04
  MD| Kinetic energy [hartree]            0.526939508127E+00   0.516593743347E+00
  MD| Temperature [K]                             289.632964           283.946401
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3078,22 +2842,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.639257849649312
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              84
  MD| Time [fs]                                                         84.000000
  MD| Conserved quantity [hartree]                            -0.221010842910E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.596989             0.851617
+ MD| CPU time per MD step [s]                      3.068906             1.334446
  MD| Energy drift per atom [K]          -0.153269184247E+00   0.626426429567E-01
  MD| Potential energy [hartree]         -0.221063925785E+04  -0.221062493001E+04
  MD| Kinetic energy [hartree]            0.530828748989E+00   0.516763207700E+00
  MD| Temperature [K]                             291.770690           284.039547
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3110,22 +2871,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.613143823983592
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              85
  MD| Time [fs]                                                         85.000000
  MD| Conserved quantity [hartree]                            -0.221010618941E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.553000             0.848104
+ MD| CPU time per MD step [s]                      2.258722             1.345319
  MD| Energy drift per atom [K]           0.168849491817E+01   0.817703167827E-01
  MD| Potential energy [hartree]         -0.221061314382E+04  -0.221062479135E+04
  MD| Kinetic energy [hartree]            0.506954413621E+00   0.516647810122E+00
  MD| Temperature [K]                             278.648131           283.976119
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3142,22 +2900,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.586190109341260
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              86
  MD| Time [fs]                                                         86.000000
  MD| Conserved quantity [hartree]                            -0.221010366600E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.517657             0.844262
+ MD| CPU time per MD step [s]                      1.866193             1.351376
  MD| Energy drift per atom [K]           0.376357434457E+01   0.124581991524E+00
  MD| Potential energy [hartree]         -0.221058619011E+04  -0.221062434250E+04
  MD| Kinetic energy [hartree]            0.482524114032E+00   0.516251022958E+00
  MD| Temperature [K]                             265.219986           283.758024
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3174,22 +2929,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.592144445499343
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              87
  MD| Time [fs]                                                         87.000000
  MD| Conserved quantity [hartree]                            -0.221010455816E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.548319             0.840860
+ MD| CPU time per MD step [s]                      4.372877             1.386106
  MD| Energy drift per atom [K]           0.302992077045E+01   0.157976690133E+00
  MD| Potential energy [hartree]         -0.221059214445E+04  -0.221062397240E+04
  MD| Kinetic energy [hartree]            0.487586285558E+00   0.515921543218E+00
  MD| Temperature [K]                             268.002415           283.576925
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3206,22 +2958,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.617867405816924
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              88
  MD| Time [fs]                                                         88.000000
  MD| Conserved quantity [hartree]                            -0.221010690961E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.568527             0.837765
+ MD| CPU time per MD step [s]                      1.067242             1.382483
  MD| Energy drift per atom [K]           0.109625202097E+01   0.168638909801E+00
  MD| Potential energy [hartree]         -0.221061786741E+04  -0.221062390303E+04
  MD| Kinetic energy [hartree]            0.510957794280E+00   0.515865136980E+00
  MD| Temperature [K]                             280.848595           283.545922
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3238,22 +2987,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.628356940841968
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              89
  MD| Time [fs]                                                         89.000000
  MD| Conserved quantity [hartree]                            -0.221010750851E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.232345             0.842199
+ MD| CPU time per MD step [s]                      0.878088             1.376815
  MD| Energy drift per atom [K]           0.603759170118E+00   0.173527901490E+00
  MD| Potential energy [hartree]         -0.221062835694E+04  -0.221062395307E+04
  MD| Kinetic energy [hartree]            0.520848429881E+00   0.515921129035E+00
  MD| Temperature [K]                             286.284995           283.576698
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3270,22 +3016,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.616324945756332
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              90
  MD| Time [fs]                                                         90.000000
  MD| Conserved quantity [hartree]                            -0.221010554276E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      1.030737             0.844294
+ MD| CPU time per MD step [s]                      1.037125             1.373041
  MD| Energy drift per atom [K]           0.222025669414E+01   0.196269332520E+00
  MD| Potential energy [hartree]         -0.221061632495E+04  -0.221062386832E+04
  MD| Kinetic energy [hartree]            0.510782188073E+00   0.515864029691E+00
  MD| Temperature [K]                             280.752072           283.545313
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3302,22 +3045,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.611197721561439
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              91
  MD| Time [fs]                                                         91.000000
  MD| Conserved quantity [hartree]                            -0.221010455252E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.626932             0.841905
+ MD| CPU time per MD step [s]                      1.817408             1.377924
  MD| Energy drift per atom [K]           0.303455862452E+01   0.227459324740E+00
  MD| Potential energy [hartree]         -0.221061119772E+04  -0.221062372908E+04
  MD| Kinetic energy [hartree]            0.506645201515E+00   0.515762723887E+00
  MD| Temperature [K]                             278.478173           283.489630
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3334,22 +3074,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.628389948205495
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              92
  MD| Time [fs]                                                         92.000000
  MD| Conserved quantity [hartree]                            -0.221010618550E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.549965             0.838732
+ MD| CPU time per MD step [s]                      0.685982             1.370403
  MD| Energy drift per atom [K]           0.169170919827E+01   0.243375084235E+00
  MD| Potential energy [hartree]         -0.221062838995E+04  -0.221062377974E+04
  MD| Kinetic energy [hartree]            0.522204446591E+00   0.515832742612E+00
  MD| Temperature [K]                             287.030331           283.528116
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3366,22 +3103,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.644965210734426
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              93
  MD| Time [fs]                                                         93.000000
  MD| Conserved quantity [hartree]                            -0.221010763324E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.747828             0.837754
+ MD| CPU time per MD step [s]                      2.623951             1.383882
  MD| Energy drift per atom [K]           0.501192093942E+00   0.246147310145E+00
  MD| Potential energy [hartree]         -0.221064496521E+04  -0.221062400754E+04
  MD| Kinetic energy [hartree]            0.537331972353E+00   0.516063917126E+00
  MD| Temperature [K]                             295.345195           283.655181
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3398,22 +3132,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.637035403933169
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              94
  MD| Time [fs]                                                         94.000000
  MD| Conserved quantity [hartree]                            -0.221010714827E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.560645             0.834806
+ MD| CPU time per MD step [s]                      4.169406             1.413515
  MD| Energy drift per atom [K]           0.899996335830E+00   0.253103150844E+00
  MD| Potential energy [hartree]         -0.221063703540E+04  -0.221062414614E+04
  MD| Kinetic energy [hartree]            0.529887134278E+00   0.516210972627E+00
  MD| Temperature [K]                             291.253130           283.736011
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3430,22 +3161,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.610277845114524
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              95
  MD| Time [fs]                                                         95.000000
  MD| Conserved quantity [hartree]                            -0.221010464999E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.518580             0.831478
+ MD| CPU time per MD step [s]                      0.937923             1.408509
  MD| Energy drift per atom [K]           0.295440880988E+01   0.281537947255E+00
  MD| Potential energy [hartree]         -0.221061027785E+04  -0.221062400015E+04
  MD| Kinetic energy [hartree]            0.505627858318E+00   0.516099571424E+00
  MD| Temperature [K]                             277.918989           283.674779
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3462,22 +3190,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.597578186874671
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              96
  MD| Time [fs]                                                         96.000000
  MD| Conserved quantity [hartree]                            -0.221010351922E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.689057             0.829994
+ MD| CPU time per MD step [s]                      1.523877             1.409711
  MD| Energy drift per atom [K]           0.388427563415E+01   0.319066464827E+00
  MD| Potential energy [hartree]         -0.221059757819E+04  -0.221062372492E+04
  MD| Kinetic energy [hartree]            0.494058971224E+00   0.515869981839E+00
  MD| Temperature [K]                             271.560135           283.548585
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3494,22 +3219,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.612949082159503
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              97
  MD| Time [fs]                                                         97.000000
  MD| Conserved quantity [hartree]                            -0.221010477239E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.659188             0.828233
+ MD| CPU time per MD step [s]                      0.755074             1.402962
  MD| Energy drift per atom [K]           0.285374954188E+01   0.345197218199E+00
  MD| Potential energy [hartree]         -0.221061294908E+04  -0.221062361383E+04
  MD| Kinetic energy [hartree]            0.508176687946E+00   0.515790669530E+00
  MD| Temperature [K]                             279.319956           283.504991
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3526,22 +3248,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.636246669229877
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              98
  MD| Time [fs]                                                         98.000000
  MD| Conserved quantity [hartree]                            -0.221010624017E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.628245             0.826193
+ MD| CPU time per MD step [s]                      1.673996             1.405728
  MD| Energy drift per atom [K]           0.164675058923E+01   0.358478375046E+00
  MD| Potential energy [hartree]         -0.221063624667E+04  -0.221062374274E+04
  MD| Kinetic energy [hartree]            0.530006495380E+00   0.515935728978E+00
  MD| Temperature [K]                             291.318737           283.584723
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3558,22 +3277,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.644390848952753
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                              99
  MD| Time [fs]                                                         99.000000
  MD| Conserved quantity [hartree]                            -0.221010614611E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.768868             0.825614
+ MD| CPU time per MD step [s]                      2.074528             1.412483
  MD| Energy drift per atom [K]           0.172409971465E+01   0.372272529991E+00
  MD| Potential energy [hartree]         -0.221064439085E+04  -0.221062395131E+04
  MD| Kinetic energy [hartree]            0.538244736056E+00   0.516161072484E+00
  MD| Temperature [K]                             295.846896           283.708583
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
  mixed_energy_forces called
  got the force_env
  got the cp_subsys
@@ -3590,22 +3306,19 @@
 
  ENERGY| Total FORCE_EVAL ( MIXED ) energy [a.u.]:         -2210.639133526498881
 
- MD_VEL| Centre of mass motion (COM)
- MD_VEL| VCOM [a.u.]              0.0000000000     0.0000000000    -0.0000000000
-
  MD| ***************************************************************************
  MD| Step number                                                             100
  MD| Time [fs]                                                        100.000000
  MD| Conserved quantity [hartree]                            -0.221010488437E+04
  MD| ---------------------------------------------------------------------------
  MD|                                          Instantaneous             Averages
- MD| CPU time per MD step [s]                      0.564907             0.823006
+ MD| CPU time per MD step [s]                      0.703725             1.405396
  MD| Energy drift per atom [K]           0.276166616880E+01   0.396166466379E+00
  MD| Potential energy [hartree]         -0.221063913353E+04  -0.221062410313E+04
  MD| Kinetic energy [hartree]            0.534249153647E+00   0.516341953295E+00
  MD| Temperature [K]                             293.650720           283.808004
  MD| ***************************************************************************
- MD| Estimated peak process memory after this step [MiB]                     168
+ MD| Estimated peak process memory after this step [MiB]                     174
 
  -------------------------------------------------------------------------------
  -                                                                             -
@@ -3647,7 +3360,7 @@
  LP    KERNEL             BACKEND                              COUNT     PERCENT
  -------------------------------------------------------------------------------
 
- MEMORY| Estimated peak process memory [MiB]                                 168
+ MEMORY| Estimated peak process memory [MiB]                                 174
 
  -------------------------------------------------------------------------------
  -                                                                             -
@@ -3733,5 +3446,25 @@
  -------------------------------------------------------------------------------
  SUBROUTINE                       CALLS  ASD         SELF TIME        TOTAL TIME
                                 MAXIMUM       AVERAGE  MAXIMUM  AVERAGE  MAXIMUM
- CP2K                                 1  1.0    0.059    0.071  145.583  145.588
- mp_sync                            508  4.8  136.763  136.953  136.763  136.953
+ CP2K                                 1  1.0    0.058    0.071  169.602  169.608
+ mp_sync                            508  4.8  162.249  162.706  162.249  162.706
+ qs_mol_dyn_low                       1  2.0    0.030    0.038  140.579  140.611
+ velocity_verlet                    100  3.0    0.128    0.154  136.517  136.526
+ apt_calc_energy_force              101  4.0    0.321   13.955  127.288  135.337
+ readbuffer_i                       205  5.0    0.122  124.821    0.122  124.821
+ apt_init                             1  2.0    0.000    0.002   27.614   27.617
+ apt_init_subsys                      1  3.0    0.001    0.002   27.601   27.602
+ apt_init_model                       1  4.0    0.032    0.049   27.587   27.589
+ mp_sum_dm                         1715  4.2    4.011    4.639    4.011    4.639
+ -------------------------------------------------------------------------------
+
+ The number of warnings for this run is : 202
+ 
+ -------------------------------------------------------------------------------
+  **** **** ******  **  PROGRAM ENDED AT                 2024-07-10 16:56:48.912
+ ***** ** ***  *** **   PROGRAM RAN ON                                 nid003697
+ **    ****   ******    PROGRAM RAN BY                                     kjoll
+ ***** **    ** ** **   PROGRAM PROCESS ID                                229396
+  **** **  *******  **  PROGRAM STOPPED IN /mnt/lustre/a2fs-work2/work/e686/e686
+                                           /shared/apt-devel/test.new/post_phili
+                                           pp_test_retestvs_orig

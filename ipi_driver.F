@@ -83,12 +83,12 @@ MODULE ipi_driver
    END INTERFACE
 
    INTERFACE
-      SUBROUTINE open_socket(psockfd, inet, port, host) BIND(C)
+      SUBROUTINE open_connect_socket(psockfd, inet, port, host) BIND(C)
          IMPORT
          INTEGER(KIND=C_INT)                      :: psockfd, inet, port
          CHARACTER(KIND=C_CHAR), DIMENSION(*)     :: host
 
-      END SUBROUTINE open_socket
+      END SUBROUTINE open_connect_socket
 
       SUBROUTINE writebuffer_csocket(psockfd, pdata, plen) BIND(C, name="writebuffer")
          IMPORT
@@ -378,7 +378,8 @@ CONTAINS
       END IF
 
       c_hostname = TRIM(drv_hostname)//C_NULL_CHAR
-      IF (ionode) CALL open_socket(socket, i_drv_unix, drv_port, c_hostname)
+      IF (ionode) CALL open_connect_socket(socket, i_drv_unix, drv_port, c_hostname)
+      
 
       NULLIFY (wait_msg)
       ALLOCATE (wait_msg(1))
